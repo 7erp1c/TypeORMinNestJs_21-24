@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /build
-
+/MyInstrumentSettingForNewProject
 # Logs
 logs
 *.log
