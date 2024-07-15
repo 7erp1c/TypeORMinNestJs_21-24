@@ -41,7 +41,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async getAll(@Query() query: QueryUsersRequestType) {
     const { sortData, searchData } = createQuery(query);
-    return await this.userQueryRepositorySql.getAllUsers(sortData, searchData);
+    return await this.usersQuery.getAllUsers(sortData, searchData);
   }
 
   @Post()
