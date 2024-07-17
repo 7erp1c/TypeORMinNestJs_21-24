@@ -37,8 +37,8 @@ export class TestingController {
   @HttpCode(204)
   async clearBd(): Promise<void> {
     const entities = [
-      // 'BlackList',
-      // 'Sessions',
+      'BlackList',
+      'Session',
       'Users',
       // 'CommentsLikes',
       // 'Comments',

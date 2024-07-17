@@ -1,53 +1,38 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from '../api/models/output/output';
-import { User } from '../domain/user.entity';
 import { LoginOrEmailInputModel } from '../../security/auth/api/model/input/loginOrEmailInputModel';
 import { Error } from 'mongoose';
-//import { ObjectId } from 'mongodb';
+import { Users } from '../domain/user.entities.typeORM';
+
 @Injectable()
 export class UsersRepositorySql {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Users) private readonly repository: Repository<Users>,
+  ) {}
 
-  async createUser(newUserDto: CreateUserDto | User): Promise<string> {
-    try {
-      const result = await this.dataSource.query(
-        `
-            INSERT INTO "Users"
-            ("login","email","hash")
-            values($1,$2,$3)
-            RETURNING id
-        `,
-        [newUserDto.login, newUserDto.email, newUserDto.hash],
-      );
-      return result[0].id;
-    } catch {
-      throw new NotFoundException();
-    }
-  }
-
-  async deleteUser(id: string) {
-    try {
-      const result = await this.dataSource.query(
-        `DELETE FROM public."Users"
-        WHERE "id" = $1`,
-        [id],
-      );
-      console.log('result.rowCount', result);
-      console.log('result.rowCount', result.rowCount);
-
-      if (result[1] === 0) throw new NotFoundException('User not found');
-      return result;
-    } catch (error) {
-      throw new NotFoundException('User not found');
-    }
-  }
+  // async deleteUser(id: string) {
+  //   try {
+  //     const result = await this.dataSource.query(
+  //       `DELETE FROM public."Users"
+  //       WHERE "id" = $1`,
+  //       [id],
+  //     );
+  //     console.log('result.rowCount', result);
+  //     console.log('result.rowCount', result.rowCount);
+  //
+  //     if (result[1] === 0) throw new NotFoundException('User not found');
+  //     return result;
+  //   } catch (error) {
+  //     throw new NotFoundException('User not found');
+  //   }
+  // }
 
   async updateUserConfirmationAccount(
     email: string,
@@ -122,32 +107,22 @@ export class UsersRepositorySql {
 
   async getUserById(id: string) {
     try {
-      const result = await this.dataSource.query(
-        `SELECT *
-               FROM "Users" 
-               WHERE "id" = \$1
-`,
-        [id],
-      );
-
-      return result[0];
-    } catch {
-      throw new BadRequestException([
-        {
-          message: 'email missing in Db',
-          field: 'email',
-        },
-      ]);
+      const result = await this.repository.findOneBy({ id: id });
+      console.log('getUserById', result);
+      if (!result || result.isDeleted) throw new NotFoundException();
+      return result;
+    } catch (e) {
+      throw new NotFoundException(e);
     }
   }
 
   async getUserByLoginOrEmail(InputModel: LoginOrEmailInputModel) {
-    const result = await this.dataSource.query(
-      `SELECT * FROM "Users" 
-             WHERE "login" = $1 
-             OR "email" = $2`,
-      [InputModel.loginOrEmail, InputModel.loginOrEmail],
-    );
+    const result = await this.repository.findOne({
+      where: [
+        { email: InputModel.loginOrEmail },
+        { login: InputModel.loginOrEmail },
+      ],
+    });
     if (!result)
       throw new UnauthorizedException([
         {
@@ -155,7 +130,7 @@ export class UsersRepositorySql {
           message: 'code already exist',
         },
       ]);
-    return result[0];
+    return result;
   }
 
   async getUserByEmail(email: string) {

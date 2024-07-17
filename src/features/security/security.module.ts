@@ -5,8 +5,9 @@ import { AuthController } from './auth/api/model/auth.controller';
 import { DevicesController } from './devices/api/devices.controller';
 import { AuthService } from './auth/aplication/auth.service';
 import { DevicesService } from './devices/aplication/devices.service';
-import { DevicesSchema, Session } from './devices/domain/device.entity';
+import { DevicesSchema } from './devices/domain/device.entity';
 import {
+  BlackList,
   RefreshTokenBlackList,
   RefreshTokenBlackListSchema,
 } from './auth/domain/refresh.token.black.list.entity';
@@ -27,6 +28,8 @@ import { LogoutSessionUseCase } from './auth/aplication.use.case/logout.session.
 import { DeviceRepositorySql } from './devices/infrastructure.sql/device.repository.sql';
 import { RefreshTokenBlackRepositorySql } from './auth/infrastrucrure.sql/refresh.token.black.repository.sql';
 import { SessionsQueryRepositorySql } from './devices/infrastructure.sql/device.query.repository.sql';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Session } from './devices/domain/device.entity.type.orm';
 const useCase = [
   RegistrationUserUseCase,
   LoginUserUseCase,
@@ -43,6 +46,7 @@ const adapters = [
   imports: [
     CqrsModule,
     UsersModule,
+    TypeOrmModule.forFeature([BlackList, Session]),
     MongooseModule.forFeature([
       {
         name: RefreshTokenBlackList.name,

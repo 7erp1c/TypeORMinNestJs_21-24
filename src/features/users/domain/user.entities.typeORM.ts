@@ -29,7 +29,10 @@ export class Users {
   @Generated('uuid')
   public confirmationCode: string;
 
-  @CreateDateColumn({ default: () => `'${new Date().toISOString()}'` })
+  @CreateDateColumn({
+    type: 'varchar',
+    default: new Date().toISOString(),
+  })
   public expirationDate: string;
 
   @Column({
@@ -41,7 +44,7 @@ export class Users {
   @Generated('uuid')
   public recoveryCode: string;
 
-  @CreateDateColumn({ default: new Date().toISOString() })
+  @CreateDateColumn({ type: 'varchar', default: new Date().toISOString() })
   public recoveryExpirationDate: string;
 
   @Column({

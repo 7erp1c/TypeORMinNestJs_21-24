@@ -1,15 +1,15 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { RefreshTokenBlackList } from '../domain/refresh.token.black.list.entity';
-import { Model } from 'mongoose';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
+import { BlackList } from '../domain/refresh.token.black.list.entity';
 
 @Injectable()
 export class RefreshTokenBlackRepositorySql {
   constructor(
     @InjectDataSource()
     protected dataSource: DataSource,
+    @InjectRepository(BlackList)
+    private readonly tokenRepository: Repository<BlackList>,
   ) {}
 
   async addToBlackList(oldToken: string) {

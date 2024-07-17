@@ -1,31 +1,43 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Session } from '../domain/device.entity';
-import { Model } from 'mongoose';
-import { SessionOutput } from '../api/model/output/output';
-import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { sessionMapper } from '../api/model/output/mapper.devices';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { NotFoundException } from '@nestjs/common';
+import { Session } from '../domain/device.entity.type.orm';
 
 export class SessionsQueryRepositorySql {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Session)
+    private readonly repository: Repository<Session>,
     protected jwtService: JwtService,
   ) {}
-  async getSessionsByUserId(
-    refreshTokenValue: string,
-  ): Promise<SessionOutput[]> {
-    const payload = this.jwtService.decode(refreshTokenValue);
-    console.log('', payload);
+  async getSessionsByUserId(refreshTokenValue: string): Promise<any> {
+    try {
+      const payload = this.jwtService.decode(refreshTokenValue);
+      const userId: string = payload.userId;
+      console.log('Get*****', userId);
 
-    const sessions = await this.dataSource.query(
-      `
-    SELECT * FROM "Sessions" 
-     WHERE "userId" = $1`,
-      [payload.userId],
-    );
-    console.log('sessions', sessions[0], sessions[1]);
-    return sessions.map(sessionMapper);
+      const query = await this.repository
+        .createQueryBuilder('s')
+        .select([
+          's.ip AS ip',
+          `s.deviceTitle AS title`,
+          's.lastActiveDate AS lastActiveDate',
+          's.deviceId AS deviceId',
+        ])
+        .where('s.userId = :userId', { userId })
+        .andWhere('s.isDeleted = false');
+
+      console.log('Query: ', query.getSql());
+      const result = await query.getRawMany();
+      if (!result) throw new NotFoundException();
+
+      return result;
+    } catch (e) {
+      throw new NotFoundException(e);
+    }
+
+    // console.log('sessions', sessions[0], sessions[1]);
+    // return sessions.map(sessionMapper);
   }
 }

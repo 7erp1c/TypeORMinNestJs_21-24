@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export type SessionDocument = HydratedDocument<Session>;
 

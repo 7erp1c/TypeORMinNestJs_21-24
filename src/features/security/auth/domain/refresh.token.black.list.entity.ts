@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Entity, PrimaryColumn } from 'typeorm';
 
 export type RefreshTokenBlackListDocument =
   HydratedDocument<RefreshTokenBlackList>;
@@ -12,3 +13,9 @@ export class RefreshTokenBlackList {
 export const RefreshTokenBlackListSchema = SchemaFactory.createForClass(
   RefreshTokenBlackList,
 );
+
+@Entity({ name: 'BlackList' })
+export class BlackList {
+  @PrimaryColumn()
+  refreshToken: string;
+}

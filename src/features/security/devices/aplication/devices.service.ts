@@ -12,12 +12,12 @@ import {
 } from '@nestjs/common';
 
 import { DeviceRepository } from '../infrastructure/device.repository';
-import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../../auth/setting/constants';
 import { RandomNumberService } from '../../../../common/service/random/randomNumberUUVid';
 import { TokenService } from '../../../../common/service/jwt/token.service';
 import { DeviceRepositorySql } from '../infrastructure.sql/device.repository.sql';
+
 @Injectable()
 export class DevicesService {
   constructor(

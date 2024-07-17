@@ -60,6 +60,7 @@ export class UsersQueryRepositoryTypeORM {
   SELECT *
   FROM "Users"
   WHERE ${searchConditions.length ? searchConditions.join(' OR ') : '1=1'}
+  AND "isDeleted" = false
   ORDER BY ${sortKey} ${sortDirection}
   OFFSET ${skippedDocuments}
   LIMIT ${sortData.pageSize}
@@ -88,7 +89,8 @@ export class UsersQueryRepositoryTypeORM {
       const query = await this.usersRepository
         .createQueryBuilder('u')
         .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
-        .where('id = :id', { id });
+        .where('id = :id', { id })
+        .andWhere('u.isDeleted = false');
       console.log('Query:', query.getSql());
       const result = await query.getOne();
       if (!result) throw new NotFoundException();

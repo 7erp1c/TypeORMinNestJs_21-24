@@ -1,41 +1,42 @@
-import { InjectDataSource } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   SessionModel,
   SessionUpdateModel,
 } from '../api/model/input/session.input.models';
-import { SessionDocument } from '../domain/device.entity';
+import { Session } from '../domain/device.entity.type.orm';
+
 @Injectable()
 export class DeviceRepositorySql {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Session)
+    private readonly repository: Repository<Session>,
+  ) {}
 
   async createNewSession(sessionModel: SessionModel) {
     try {
-      const session = await this.dataSource.query(
-        `
-            INSERT INTO "Sessions"
-            ("userId","deviceId","deviceTitle","ip",
-            "lastActiveDate","createdAt","expiredAt")
-            values($1,$2,$3,$4,
-            $5,$6,$7)
-            RETURNING id
-        `,
-        [
-          sessionModel.userId,
-          sessionModel.deviceId,
-          sessionModel.deviceTitle,
-          sessionModel.ip,
-          sessionModel.lastActiveDate,
-          sessionModel.refreshToken.createdAt,
-          sessionModel.refreshToken.expiredAt,
-        ],
-      );
-      return session;
+      const session = await this.repository
+        .createQueryBuilder()
+        .insert()
+        .into(Session)
+        .values({
+          userId: sessionModel.userId,
+          deviceId: sessionModel.deviceId,
+          deviceTitle: sessionModel.deviceTitle,
+          ip: sessionModel.ip,
+          lastActiveDate: sessionModel.lastActiveDate,
+          createdAt: sessionModel.refreshToken.createdAt,
+          expiredAt: sessionModel.refreshToken.expiredAt,
+        });
+      console.log('Query:', session.getSql());
+      const result = await session.execute();
+      return result;
     } catch (error) {
       console.error('An error occurred while creating a new session:', error);
       throw new Error('Failed to create a new session');
@@ -64,13 +65,16 @@ export class DeviceRepositorySql {
 
   async deleteSessionById(deviceId: string, userId: string) {
     try {
-      const result = await this.dataSource.query(
-        `DELETE FROM "Sessions"
-       WHERE "deviceId" = $1 AND "userId" = $2;`,
-        [deviceId, userId],
-      );
+      const isDelete = await this.repository
+        .createQueryBuilder()
+        .update()
+        .set({ isDeleted: true })
+        .where('deviceId = :deviceId', { deviceId })
+        .andWhere('userId = :userId', { userId });
 
-      if (result[1] === 0) {
+      console.log('Query:', isDelete.getSql());
+      const result = await isDelete.execute();
+      if (result.affected === 0) {
         throw new NotFoundException('Session not found');
       } else {
         return true;
@@ -87,7 +91,7 @@ export class DeviceRepositorySql {
                WHERE "deviceId" = $1`,
         [deviceId],
       );
-      if (!session) throw new NotFoundException('Session not found');
+      //if (!session) throw new NotFoundException('Session not found');
       return session[0];
     } catch {
       throw new NotFoundException('Session not found');
