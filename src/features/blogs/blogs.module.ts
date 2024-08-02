@@ -43,6 +43,10 @@ import { CommentsRepositorySql } from './comments/infrastructure.sql/comments.re
 import { CommentsLikesQueryRepositorySql } from './likes/infrastructure.sql/query/comments.likes.query.repository.sql';
 import { PostLikesRepositorySql } from './likes/infrastructure.sql/post.likes.repository.sql';
 import { CommentsLikesRepositorySql } from './likes/infrastructure.sql/comments.likes.repository.sql';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blogs } from './blogs/domain/blogs.entity.typeORM';
+import { Posts } from './posts/domain/posts.entity.type.orm';
+import { CommentLike, PostsLike } from './likes/domain/likes.entity.type.orm';
 
 const controllers = [
   BlogsController,
@@ -119,7 +123,11 @@ const mongooseImports = [
 ];
 
 @Module({
-  imports: [UsersModule, ...mongooseImports],
+  imports: [
+    UsersModule,
+    ...mongooseImports,
+    TypeOrmModule.forFeature([Blogs, Posts, CommentLike, PostsLike]),
+  ],
   controllers: [...controllers],
   providers: [...services, ...repositories, ...queryRepositories, ...providers],
   exports: [],

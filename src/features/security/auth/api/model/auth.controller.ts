@@ -128,6 +128,10 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('registration-email-resending')
   async registrationEmailResending(@Body() inputModelDto: UserEmailInputModel) {
+    // const delay = (ms: number) =>
+    //   new Promise((resolve) => setTimeout(resolve, ms));
+    //
+    // await delay(4000);
     return await this.authService.registrationEmailResending(inputModelDto);
   }
 

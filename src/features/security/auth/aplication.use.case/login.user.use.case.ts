@@ -3,6 +3,7 @@ import { SessionInputModel } from '../../devices/api/model/input/session.input.m
 import {
   HttpException,
   HttpStatus,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../../../users/application/users.service';
@@ -33,6 +34,10 @@ export class LoginUserUseCase
     );
     if (!user)
       throw new HttpException('Bad login or password', HttpStatus.UNAUTHORIZED);
+    if (user.isDeleted)
+      throw new NotFoundException({
+        message: 'User is deleted',
+      });
     // const userId = user._id.toString(); //mongoose
     const userId = user.id.toString();
     const userName = user.login;

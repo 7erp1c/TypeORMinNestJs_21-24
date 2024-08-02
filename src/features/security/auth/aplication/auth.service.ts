@@ -2,6 +2,7 @@ import {
   BadRequestException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -41,6 +42,10 @@ export class AuthService {
 
   async newPassword(inputModelDto: NewPasswordInputModel) {
     const user = await this.usersService.getUserByCode(inputModelDto.code);
+    if (user.isDeleted)
+      throw new NotFoundException({
+        message: 'User is Deleted',
+      });
     //сравним input-password и hash c Db, незя использовать старый
     const compareHash = await this.bcryptAdapter.compareHash(
       inputModelDto.password,
@@ -69,6 +74,10 @@ export class AuthService {
 
   async passwordRecovery(inputModelDto: UserEmailInputModel) {
     const user = await this.usersService.getUserByEmail(inputModelDto.email);
+    if (user.isDeleted)
+      throw new NotFoundException({
+        message: 'User is Deleted',
+      });
     if (!user.recoveryPassword.isUsed) {
       //проверим не протух ли код:
       const currentDate =
@@ -104,6 +113,10 @@ export class AuthService {
 
   async registrationConfirmation(inputModelDto: ConfirmationCodeInputModel) {
     const user = await this.usersService.getUserByCode(inputModelDto.code);
+    if (user.isDeleted)
+      throw new NotFoundException({
+        message: 'User is Deleted',
+      });
     const currentDate = await this.dateCreate.getCurrentDateInISOStringFormat();
     if (
       // !user ||
@@ -130,11 +143,12 @@ export class AuthService {
 
   async registrationEmailResending(inputModelDto: UserEmailInputModel) {
     const RecoveryCode = await this.randomNumberService.generateRandomUUID();
-    // const delay = (ms: number) =>
-    //   new Promise((resolve) => setTimeout(resolve, ms));
-    //
-    // await delay(4000);
+
     const user = await this.usersService.getUserByEmail(inputModelDto.email);
+    if (user.isDeleted)
+      throw new NotFoundException({
+        message: 'User is Deleted',
+      });
     //if (!user || user.emailConfirmation.isConfirmed)//mongoose
     if (!user || user.isConfirmed)
       throw new BadRequestException([

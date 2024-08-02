@@ -48,16 +48,30 @@ export class DeviceRepositorySql {
       // Проверяем, есть ли сессии для удаления
       const sessions = await this.dataSource.query(
         `SELECT * FROM public."Sessions"
-       WHERE "userId" = \$1 AND "deviceId" <> \$2;`,
+       WHERE "userId" = \$1 AND "deviceId" <> \$2 AND "isDeleted" = false`,
         [userId, deviceId],
       );
       if (sessions.length <= 0)
         throw new NotFoundException('Session not found');
-      await this.dataSource.query(
-        `DELETE FROM public."Sessions"
-      WHERE "userId" = $1 AND "deviceId" <> $2;`,
-        [userId, deviceId],
-      );
+      const isDelete = await this.repository
+        .createQueryBuilder()
+        .update()
+        .set({ isDeleted: true })
+        .where('deviceId <> :deviceId', { deviceId })
+        .andWhere('userId = :userId', { userId });
+
+      console.log('Query:', isDelete.getSql());
+      const result = await isDelete.execute();
+      if (result.affected === 0) {
+        throw new NotFoundException('Session not found');
+      } else {
+        return true;
+      }
+      // await this.dataSource.query(
+      //   `DELETE FROM public."Sessions"
+      // WHERE "userId" = $1 AND "deviceId" <> $2;`,
+      //   [userId, deviceId],
+      // );
     } catch (error) {
       throw new Error(error);
     }
@@ -88,7 +102,8 @@ export class DeviceRepositorySql {
     try {
       const session = await this.dataSource.query(
         `SELECT * FROM "Sessions" 
-               WHERE "deviceId" = $1`,
+               WHERE "deviceId" = $1
+               AND "isDeleted" = false`,
         [deviceId],
       );
       //if (!session) throw new NotFoundException('Session not found');
@@ -104,7 +119,7 @@ export class DeviceRepositorySql {
         `
       UPDATE "Sessions"
       SET "lastActiveDate" = $1, "expiredAt" = $2, "createdAt" = $3
-      WHERE "deviceId" = $4`,
+      WHERE "deviceId" = $4 AND "isDeleted" = false`,
         [
           updateModel.lastActiveDate,
           updateModel.refreshToken.expiredAt,

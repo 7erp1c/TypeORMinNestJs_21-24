@@ -30,9 +30,15 @@ export class SessionsQueryRepositorySql {
 
       console.log('Query: ', query.getSql());
       const result = await query.getRawMany();
-      if (!result) throw new NotFoundException();
 
-      return result;
+      const responses = result.map((sessionData: any) => ({
+        ip: sessionData.ip,
+        title: sessionData.title,
+        lastActiveDate: sessionData.lastactivedate,
+        deviceId: sessionData.deviceid,
+      }));
+      if (!result) throw new NotFoundException();
+      return responses;
     } catch (e) {
       throw new NotFoundException(e);
     }

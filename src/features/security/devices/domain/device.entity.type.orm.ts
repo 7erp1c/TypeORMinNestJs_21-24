@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Users } from '../../../users/domain/user.entities.typeORM';
 
 @Entity({ name: 'Sessions' })
 export class Session {
@@ -22,4 +23,7 @@ export class Session {
     default: false,
   })
   public isDeleted: boolean;
+
+  @ManyToOne(() => Users, (user) => user.sessions)
+  user: Users;
 }

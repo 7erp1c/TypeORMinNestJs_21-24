@@ -3,8 +3,10 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Session } from '../../security/devices/domain/device.entity.type.orm';
 
 @Entity({ name: 'Users' })
 export class Users {
@@ -56,4 +58,7 @@ export class Users {
     default: false,
   })
   public isDeleted: boolean;
+
+  @OneToMany(() => Session, (session) => session.user)
+  sessions: Session[];
 }

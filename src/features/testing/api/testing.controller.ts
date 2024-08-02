@@ -40,17 +40,25 @@ export class TestingController {
       'BlackList',
       'Session',
       'Users',
-      // 'CommentsLikes',
-      // 'Comments',
-      // 'PostsLikes',
-      // 'Posts',
-      // 'Blogs',
+      'CommentsLikes',
+      //'Comments',
+      'PostsLikes',
+      'Posts',
+      'Blogs',
     ];
-
     for (const entity of entities) {
-      await this.dataSource.getRepository(entity).clear();
+      const repository = this.dataSource.getRepository(entity);
+      const records = await repository.find();
+
+      for (const record of records) {
+        await repository.remove(record);
+      }
     }
 
-    return;
+    //   for (const entity of entities) {
+    //     await this.dataSource.getRepository(entity).clear();
+    //   }
+    //
+    //   return;
   }
 }

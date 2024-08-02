@@ -16,7 +16,7 @@ export class RefreshTokenBlackRepositorySql {
     try {
       await this.dataSource.query(
         ` INSERT INTO "BlackList"
-             ("oldToken")
+             ("refreshToken")
               values($1)`,
         [oldToken],
       );
@@ -30,8 +30,8 @@ export class RefreshTokenBlackRepositorySql {
     try {
       console.log('oldToken', oldToken);
       const isInBlackList = await this.dataSource.query(
-        `SELECT "oldToken" FROM public."BlackList" 
-                   WHERE "oldToken" = $1;`,
+        `SELECT "refreshToken" FROM public."BlackList" 
+                   WHERE "refreshToken" = $1;`,
         [oldToken],
       );
       return isInBlackList[0] ? isInBlackList[0] : null;

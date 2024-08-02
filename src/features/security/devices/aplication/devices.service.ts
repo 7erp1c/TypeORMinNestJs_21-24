@@ -91,7 +91,8 @@ export class DevicesService {
       // await this.deviceRepository.getSessionByDeviceId(deviceId); mongoose
       await this.deviceRepositorySql.getSessionByDeviceId(deviceId);
 
-    if (!sessionUserId) throw new UnauthorizedException('Session not found');
+    if (!sessionUserId.userId)
+      throw new UnauthorizedException('Session not found');
     //if (currentUserId !== sessionUserId)//mongoose
     if (currentUserId !== sessionUserId.userId)
       throw new ForbiddenException('The session does not belong to the user');

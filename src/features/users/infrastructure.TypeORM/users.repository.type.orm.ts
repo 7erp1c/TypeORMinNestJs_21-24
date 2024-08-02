@@ -19,14 +19,20 @@ export class UsersRepositoryTypeOrm {
 
   async deleteUser(id: string) {
     try {
-      const result = await this.users
+      const result1 = await this.users
         .createQueryBuilder()
         .update('Users')
         .set({ isDeleted: true })
         .where('id = :id', { id })
         .execute();
-      if (result.affected === 0) throw new NotFoundException('User not found');
-      return result;
+      if (result1.affected === 0) throw new NotFoundException('User not found');
+      await this.users
+        .createQueryBuilder()
+        .update('Users')
+        .set({ isDeleted: true })
+        .where('id = :id', { id })
+        .execute();
+      return result1;
     } catch (error) {
       throw new NotFoundException('User not found');
     }
