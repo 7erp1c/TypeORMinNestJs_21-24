@@ -1,9 +1,11 @@
 import { LikeStatusType } from '../api/model/input/input.types';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'CommentsLikes' })
 export class CommentLike {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
+  @Column()
   commentId: string;
 
   @Column()
@@ -15,7 +17,10 @@ export class CommentLike {
 
 @Entity({ name: 'PostsLikes' })
 export class PostsLike {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
+
+  @Column()
   postId: string;
 
   @Column()
