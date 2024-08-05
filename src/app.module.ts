@@ -64,11 +64,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(LoggerMiddleware)
       .forRoutes('*')
-<<<<<<< HEAD
       .apply(cookieParser() as any)
-=======
-      .apply(cookieParser())
->>>>>>> 147a9efdd00a7ed1bd621c2d367a29a58088e3f6
       .forRoutes('*');
   }
 }
