@@ -60,7 +60,7 @@ export class TokenService {
     const payload = { userId: id, loginUser: login };
     return this.jwtService.signAsync(payload, {
       secret: jwtConstants.secret,
-      expiresIn: '10s',
+      expiresIn: '200000s',
     });
     // jwt.sign({ userId: id }, appSettings.api.JWT_SECRET, {
     //   expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRATION_TIME,
@@ -71,7 +71,7 @@ export class TokenService {
     const payload = { userId: id, loginUser: login, deviceId: deviceId };
     return this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
-      expiresIn: '20s',
+      expiresIn: '200000s',
     });
 
     // const deviceId = uuidv4();

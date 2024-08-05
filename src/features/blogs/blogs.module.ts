@@ -47,6 +47,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blogs } from './blogs/domain/blogs.entity.typeORM';
 import { Posts } from './posts/domain/posts.entity.type.orm';
 import { CommentLike, PostsLike } from './likes/domain/likes.entity.type.orm';
+import { Comments } from './comments/domain/comments.entity.typeORM';
 
 const controllers = [
   BlogsController,
@@ -126,7 +127,7 @@ const mongooseImports = [
   imports: [
     UsersModule,
     ...mongooseImports,
-    TypeOrmModule.forFeature([Blogs, Posts, CommentLike, PostsLike]),
+    TypeOrmModule.forFeature([Blogs, Posts, CommentLike, PostsLike, Comments]),
   ],
   controllers: [...controllers],
   providers: [...services, ...repositories, ...queryRepositories, ...providers],
