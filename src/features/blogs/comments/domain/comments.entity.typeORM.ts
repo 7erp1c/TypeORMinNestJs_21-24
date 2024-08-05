@@ -1,4 +1,3 @@
-import { Prop, Schema } from '@nestjs/mongoose';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('Comments')
