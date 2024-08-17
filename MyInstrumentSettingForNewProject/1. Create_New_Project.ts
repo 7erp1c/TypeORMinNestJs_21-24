@@ -8,7 +8,7 @@ step5: yarn ts-jest config:init
 step6: yarn add jest ts-jest @types/jest supertest @types/supertest
 step7: yarn add express-validator
 step7: yarn add mongodb
-step8: yarn add bcrypt @types/bcrypt --dev
+step8: yarn add bcrypt @types/bcrypt --dev 
 step9: yarn add express-jwt //создание old-token
 step9: yarn add nodemailer @types/nodemailer --dev// для настройки отправки писем при регистрации
 step10: yarn add uuid  @types/uuid --dev // это функция для генерации UUID (Universally Unique Identifier) версии 4. Обычно она используется для создания уникальных идентификаторов в приложениях.

@@ -11,6 +11,7 @@ import process from 'process';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { appSettings } from './settings/app-settings';
+import { QuizModule } from './features/quiz/quiz.module';
 //const URI = appSettings.api.MONGO_CONNECTION_URI;
 //console.log(URI, 'URI**');
 
@@ -38,7 +39,7 @@ const typeOrmModule = TypeOrmModule.forRoot({
   // logging: true,
   //ssl: true,
 });
-const appModules = [UsersModule, BlogsModule, SecurityModule];
+const appModules = [UsersModule, BlogsModule, SecurityModule, QuizModule];
 //дабы не заюзать
 if (process.env.ENV !== 'PRODUCTION') {
   appModules.push(TestingModule);

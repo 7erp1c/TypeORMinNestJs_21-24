@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
-import { UserOutputDto } from './models/output/output';
 import { UserCreateInputModel } from './models/input/create.user.input.model';
 import { createQuery } from '../../../base/adapters/query/create.query';
 import { QueryUsersRequestType } from './models/input/input';
