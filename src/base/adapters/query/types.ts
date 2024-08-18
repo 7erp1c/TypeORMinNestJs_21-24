@@ -10,6 +10,8 @@ export type QueryRequestType = {
   searchLoginTerm?: string | null;
   searchEmailTerm?: string | null;
   searchNameTerm?: string | null;
+  bodySearchTerm?: string | null;
+  publishedStatus?: string | null;
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
   pageNumber?: number;
@@ -27,6 +29,8 @@ export type QuerySearchType = {
   searchLoginTerm?: string | null;
   searchEmailTerm?: string | null;
   searchNameTerm?: string | null;
+  bodySearchTerm?: string | null;
+  publishedStatus?: string | null;
 };
 
 export type QueryDto = {

@@ -19,7 +19,6 @@ export class Question {
   createdAt: string;
   @Column()
   updatedAt: string;
-
   @DeleteDateColumn()
   public deletedAt: Date;
   // @Column('boolean', { default: false })

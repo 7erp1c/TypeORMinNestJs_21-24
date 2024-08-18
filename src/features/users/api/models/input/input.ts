@@ -12,3 +12,12 @@ export type SortPostRepositoryType = {
   pageNumber: number;
   pageSize: number;
 };
+
+export type QueryQuestionRequestType = {
+  bodySearchTerm?: string | null;
+  publishedStatus?: string | null;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+  pageNumber?: number;
+  pageSize?: number;
+};

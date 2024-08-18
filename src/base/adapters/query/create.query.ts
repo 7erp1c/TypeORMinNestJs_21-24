@@ -16,6 +16,8 @@ export const createQuery = (query: QueryRequestType): QueryDto => {
   if (query.searchLoginTerm) searchData.searchLoginTerm = query.searchLoginTerm;
   if (query.searchEmailTerm) searchData.searchEmailTerm = query.searchEmailTerm;
   if (query.searchNameTerm) searchData.searchNameTerm = query.searchNameTerm;
+  if (query.bodySearchTerm) searchData.bodySearchTerm = query.bodySearchTerm;
+  if (query.publishedStatus) searchData.publishedStatus = query.publishedStatus;
 
   return { sortData, searchData };
 };

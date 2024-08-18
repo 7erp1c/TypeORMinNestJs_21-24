@@ -36,7 +36,7 @@ const typeOrmModule = TypeOrmModule.forRoot({
   database: process.env.POSTGRES_DATABASE,
   autoLoadEntities: true,
   synchronize: true,
-  // logging: true,
+  logging: true,
   //ssl: true,
 });
 const appModules = [UsersModule, BlogsModule, SecurityModule, QuizModule];
