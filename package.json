@@ -80,7 +80,8 @@
       "ts"
     ],
     "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testMatch": ["**/*.spec.ts", "**/*.e2e-spec.ts","**/*.spec.ts", "**/*.test.ts", "**/*.e2e.test.ts"],
+    "roots": ["../test/e2e"],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

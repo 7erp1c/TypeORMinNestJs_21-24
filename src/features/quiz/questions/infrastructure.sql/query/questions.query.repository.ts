@@ -17,18 +17,18 @@ export class QuestionsQueryRepository {
 
   async getAll(sortData: QuerySortType, searchData: QuerySearchType) {
     // Сортировка
-    const sortKeyMap = {
+    const sortDefault = {
       default: `"createdAt"`,
     };
-    const sortKey = `"${sortData.sortBy}"` || sortKeyMap.default;
+    const sortKey = `"${sortData.sortBy}"` || sortDefault.default;
     const sortDirection = sortData.sortDirection === 'asc' ? `ASC` : `DESC`;
 
-    // Параметры пагинации
+    // Параметры пагинации 👀
     const pageNumber = sortData.pageNumber || 1;
     const pageSize = sortData.pageSize || 10;
     const offset = (pageNumber - 1) * pageSize;
 
-    //Начало QueryBuilder
+    //Начало Query_Builderо4ка
     const query = this.question
       .createQueryBuilder('q')
       .select([
@@ -40,14 +40,14 @@ export class QuestionsQueryRepository {
         'q.updatedAt',
       ]);
 
-    // Поиск по bodySearchTerm, если он передан
+    // Поиск по body_Search_Term, если он передан
     if (searchData.bodySearchTerm) {
       query.andWhere('q.body LIKE :bodySearchTerm', {
         bodySearchTerm: `%${searchData.bodySearchTerm}%`,
       });
     }
 
-    // Фильтрация по publishedStatus
+    // Фильтрация по published_Status
     if (searchData.publishedStatus === 'published') {
       query.andWhere('q.published = :published', { published: true });
     } else if (searchData.publishedStatus === 'notPublished') {

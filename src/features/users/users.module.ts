@@ -18,6 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './domain/user.entities.typeORM';
 import { UsersRepositoryTypeOrm } from './infrastructure.TypeORM/users.repository.type.orm';
 import { UsersQueryRepositoryTypeORM } from './infrastructure.TypeORM/users.query.repository.TypeORM';
+import { Player } from '../quiz/game/domain/player.entity';
 
 const useCases = [CreateUserUseCase, DeleteUserUseCase];
 const usersProviders = [

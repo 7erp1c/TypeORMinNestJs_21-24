@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
-import { initSettings } from '../util/init-settings';
+import { initSettings } from '../base/settings/init-settings';
 import { UsersService } from '../../src/features/users/application/users.service';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 describe('test AuthService', () => {
   let app: INestApplication;
   let findsAll: FindsAll;
+  let server;
   // let httpServer;
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) => {
@@ -18,6 +19,7 @@ describe('test AuthService', () => {
     app = result.app;
     const dataSource = app.get(DataSource);
     findsAll = new FindsAll(dataSource);
+    server = request(app.getHttpServer());
     // httpServer = result.httpServer;
   });
   // afterEach(async () => {
@@ -39,7 +41,7 @@ describe('test AuthService', () => {
 
   describe('testUsersEndpoint', () => {
     it(' - create user for test posts', async () => {
-      const createUser = await request(app.getHttpServer())
+      const createUser = await server
         .post('/sa/users')
         .auth('admin', 'qwerty')
         .send({

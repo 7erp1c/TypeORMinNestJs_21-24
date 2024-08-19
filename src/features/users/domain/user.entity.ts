@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
+import { ManyToOne, OneToMany } from 'typeorm';
+import { Player } from '../../quiz/game/domain/player.entity';
 
 export type UserDocument = HydratedDocument<User>;
 const uniqueCode = uuidv4();
@@ -48,6 +50,8 @@ export class User {
     expirationDate: string;
     isUsed: boolean;
   };
+  @OneToMany(() => Player, (player) => player.user)
+  players: Player[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -42,8 +42,6 @@ export class QuestionsController {
   @HttpCode(HttpStatus.OK)
   async findQuestions(@Query() query: QueryRequestType) {
     const { sortData, searchData } = createQuery(query);
-    console.log(searchData.bodySearchTerm);
-    console.log(searchData.publishedStatus);
     return await this.queryRepository.getAll(sortData, searchData);
   }
 

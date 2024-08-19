@@ -41,9 +41,19 @@ export class QuestionsRepository {
   }
   async updateDataQuestion(id: string, inputModel: updateQuestion) {
     const logger = new Logger('QuestionsService');
-
+    const date = new Date();
     try {
-      const result = await this.questions.update(id, inputModel);
+      const result = await this.questions
+        .createQueryBuilder()
+        .update(Question)
+        .set({
+          body: inputModel.body,
+          correctAnswers: inputModel.correctAnswers,
+          updatedAt: date,
+        })
+        .where('id = :id', { id })
+        //.returning('id')
+        .execute();
       if (result.affected === 0) {
         logger.warn(`Update failed: Question with ID ${id} not found`);
         throw new NotFoundException('Question not found');
@@ -58,8 +68,18 @@ export class QuestionsRepository {
   }
 
   async updatePublishQuestion(id: string, inputModel: updateQuestionPublish) {
+    const date = new Date();
     try {
-      const result = await this.questions.update(id, inputModel);
+      const result = await this.questions
+        .createQueryBuilder()
+        .update(Question)
+        .set({
+          published: inputModel.published,
+          updatedAt: date,
+        })
+        .where('id = :id', { id })
+        //.returning('id')
+        .execute();
       if (result.affected === 0)
         throw new NotFoundException('Question not found');
       return result;

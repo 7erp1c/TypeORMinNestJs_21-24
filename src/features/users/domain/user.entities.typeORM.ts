@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Session } from '../../security/devices/domain/device.entity.type.orm';
+import { Player } from '../../quiz/game/domain/player.entity';
 
 @Entity({ name: 'Users' })
 export class Users {
@@ -61,4 +62,10 @@ export class Users {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  @OneToMany(() => Player, (player) => player.user, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  player: Player[];
 }

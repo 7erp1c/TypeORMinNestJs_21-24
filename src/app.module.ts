@@ -8,10 +8,11 @@ import { BlogsModule } from './features/blogs/blogs.module';
 import { SecurityModule } from './features/security/security.module';
 import { TestingModule } from './features/testing/testing.module';
 import process from 'process';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { appSettings } from './settings/app-settings';
 import { QuizModule } from './features/quiz/quiz.module';
+import { postgresConfig } from './settings/postgres.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 //const URI = appSettings.api.MONGO_CONNECTION_URI;
 //console.log(URI, 'URI**');
 
@@ -27,18 +28,6 @@ const throttleModule = ThrottlerModule.forRoot([
   },
 ]);
 
-const typeOrmModule = TypeOrmModule.forRoot({
-  type: 'postgres',
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(<string>process.env.POSTGRES_PORT),
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
-  autoLoadEntities: true,
-  synchronize: true,
-  logging: true,
-  //ssl: true,
-});
 const appModules = [UsersModule, BlogsModule, SecurityModule, QuizModule];
 //дабы не заюзать
 if (process.env.ENV !== 'PRODUCTION') {
@@ -50,7 +39,7 @@ if (process.env.ENV !== 'PRODUCTION') {
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    typeOrmModule,
+    TypeOrmModule.forRoot(postgresConfig),
     mongoModule,
     throttleModule,
     ...appModules,

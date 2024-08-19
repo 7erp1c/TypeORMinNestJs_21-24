@@ -1,26 +1,51 @@
 import {
   Column,
+  CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Game } from '../../game/domain/game.entity';
+import { Answer } from '../../game/domain/answers.on.questions.entity';
 
-@Entity({ name: 'Questions' })
+@Entity('questions')
 export class Question {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column()
+
+  @Column({ type: 'varchar', width: 500 })
   body: string;
-  @Column('text', { array: true, nullable: false })
+
+  @Column({ type: 'jsonb', default: [] })
   correctAnswers: string[];
-  @Column('boolean', { nullable: false, default: false })
+
+  @Column({ type: 'boolean', default: false })
   published: boolean;
-  @Column()
-  createdAt: string;
-  @Column()
-  updatedAt: string;
+
+  @CreateDateColumn({ type: 'timestamp with time zone' })
+  createdAt: Date;
+
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
+  updatedAt: Date;
+
+  //in Answer
+  @OneToMany(() => Answer, (answer) => answer.question, {
+    onDelete: 'CASCADE',
+  })
+  answers: Answer[];
+  //in game
+  @ManyToMany(() => Game, (game) => game.questions, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable()
+  games: Game[];
+
   @DeleteDateColumn()
   public deletedAt: Date;
-  // @Column('boolean', { default: false })
-  // isDeleted: boolean;
 }
