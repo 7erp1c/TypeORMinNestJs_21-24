@@ -14,7 +14,15 @@ import { Player } from './game/domain/player.entity';
 import { Game } from './game/domain/game.entity';
 import { Answer } from './game/domain/answers.on.questions.entity';
 import { ConnectQuizGameUseCase } from './game/aplication.use.case/connect.quiz.game.use.case';
-
+import { PairQuizController } from './game/api/pair.quiz.controller';
+import { JwtService } from '@nestjs/jwt';
+import { GameQueryRepository } from './game/infrastructure.sql/query/game.query.repository';
+import { UsersQueryRepositorySql } from '../users/sql.infrastructure/users-query-repository-sql';
+import { SaveRepository } from './game/infrastructure.sql/save.repository';
+import { SendAnswerUseCase } from './game/aplication.use.case/answers.quiz.game.use.case';
+import { EventEmitter } from 'typeorm/browser/platform/BrowserPlatformTools';
+import { Buffer } from 'buffer';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 const questionsProvider = [
   CreateQuestionsUseCase,
   QuestionsRepository,
@@ -22,16 +30,30 @@ const questionsProvider = [
   DeleteQuestionUseCase,
   UpdatePublishQuestionUseCase,
   UpdateDataQuestionUseCase,
+  UsersQueryRepositorySql,
 ];
-const quizUseCaseProvider = [ConnectQuizGameUseCase];
+const quizUseCaseProvider = [
+  ConnectQuizGameUseCase,
+  QuestionsQueryRepository,
+  GameQueryRepository,
+  SaveRepository,
+  SendAnswerUseCase,
+  GameQueryRepository,
+];
 
 @Module({
   imports: [
     CqrsModule,
     TypeOrmModule.forFeature([Question, Player, Game, Answer]),
+    EventEmitterModule.forRoot(),
   ],
-  controllers: [QuestionsController],
-  providers: [...questionsProvider, DateCreate, ...quizUseCaseProvider],
+  controllers: [QuestionsController, PairQuizController],
+  providers: [
+    ...questionsProvider,
+    DateCreate,
+    ...quizUseCaseProvider,
+    JwtService,
+  ],
   exports: [],
 })
 export class QuizModule {}

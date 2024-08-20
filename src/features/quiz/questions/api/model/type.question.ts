@@ -3,8 +3,8 @@ export type quizQuestion = {
   body: string;
   correctAnswers: string[];
   published: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type createQuizQuestion = {

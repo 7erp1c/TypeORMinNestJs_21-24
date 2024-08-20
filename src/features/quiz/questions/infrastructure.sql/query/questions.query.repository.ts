@@ -12,7 +12,7 @@ import {
 export class QuestionsQueryRepository {
   constructor(
     @InjectRepository(Question)
-    private readonly question: Repository<quizQuestion>,
+    private readonly question: Repository<Question>,
   ) {}
 
   async getAll(sortData: QuerySortType, searchData: QuerySearchType) {
@@ -77,7 +77,7 @@ export class QuestionsQueryRepository {
   }
 
   //____________________________________________________________________________
-  async getById(id: string): Promise<quizQuestion> {
+  async getById(id: string) {
     console.log('questionId: ', id);
     try {
       const query = await this.question
@@ -107,5 +107,14 @@ export class QuestionsQueryRepository {
     } catch (e) {
       throw new NotFoundException(e);
     }
+  }
+
+  async findRandomQuestions(): Promise<Question[]> {
+    return await this.question
+      .createQueryBuilder('q')
+      .where('q.published = true')
+      .orderBy('RANDOM()')
+      .take(5)
+      .getMany();
   }
 }

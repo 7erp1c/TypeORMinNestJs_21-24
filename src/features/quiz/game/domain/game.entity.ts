@@ -36,7 +36,7 @@ export class Game {
     type: 'timestamp with time zone',
     nullable: true,
   })
-  finishGameDate: Date;
+  finishGameDate: Date | null;
 
   @Column({
     type: 'timestamp with time zone',

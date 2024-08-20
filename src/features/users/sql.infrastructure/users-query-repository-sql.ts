@@ -11,6 +11,8 @@ import {
   QuerySortType,
 } from '../../../base/adapters/query/types';
 import { getAuthTypeEndpointMe } from '../../security/auth/api/model/output/output';
+import { User } from '../domain/user.entity';
+import { Users } from '../domain/user.entities.typeORM';
 
 @Injectable()
 export class UsersQueryRepositorySql {
@@ -84,15 +86,12 @@ export class UsersQueryRepositorySql {
     };
   }
 
-  async getById(id: string): Promise<UserOutputDto> {
+  async getById(id: string): Promise<Users | null> {
     try {
-      const result = await this.dataSource.query(
-        `
-             SELECT "id", "login", "email", "createdAt" FROM "Users"
-             WHERE "id" =  $1`,
-        [id],
-      );
-      return result[0];
+      return await this.dataSource
+        .createQueryBuilder(Users, 'u')
+        .where('u.id = :id', { id })
+        .getOne();
     } catch {
       throw new NotFoundException();
     }

@@ -1,7 +1,4 @@
-import {
-  updateQuestion,
-  updateQuestionPublish,
-} from '../api/model/input/input.questions';
+import { updateQuestion } from '../api/model/input/input.questions';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionsRepository } from '../infrastructure.sql/questions.repository';
 
