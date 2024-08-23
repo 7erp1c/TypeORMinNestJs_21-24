@@ -32,13 +32,14 @@ export class Question {
     type: 'timestamp with time zone',
     nullable: true,
   })
-  updatedAt: Date;
+  updatedAt: Date | null;
 
   //in Answer
   @OneToMany(() => Answer, (answer) => answer.question, {
     onDelete: 'CASCADE',
   })
   answers: Answer[];
+
   //in game
   @ManyToMany(() => Game, (game) => game.questions, {
     onDelete: 'CASCADE',

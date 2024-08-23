@@ -4,7 +4,7 @@ export type quizQuestion = {
   correctAnswers: string[];
   published: boolean;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date | null;
 };
 
 export type createQuizQuestion = {
@@ -12,5 +12,5 @@ export type createQuizQuestion = {
   correctAnswers: string[];
   published: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 };

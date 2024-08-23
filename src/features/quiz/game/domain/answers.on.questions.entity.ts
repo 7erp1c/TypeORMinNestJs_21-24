@@ -29,8 +29,8 @@ export class Answer {
   })
   @JoinColumn()
   player: Player;
-  //in Question
-  @OneToMany(() => Question, (question) => question.answers, {
+
+  @ManyToOne(() => Question, (question) => question.answers, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

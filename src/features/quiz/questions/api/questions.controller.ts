@@ -25,7 +25,6 @@ import { QuestionsQueryRepository } from '../infrastructure.sql/query/questions.
 import { DeleteQuestionsUseCaseCommand } from '../aplication.use.case/delete.question.use.case';
 import { UpdatePublishQuestionUseCaseCommand } from '../aplication.use.case/update.question.publish.use.case';
 import { UpdateDataQuestionUseCaseCommand } from '../aplication.use.case/update.question.data.use.case';
-import { QueryQuestionRequestType } from '../../../users/api/models/input/input';
 import { QueryRequestType } from '../../../../base/adapters/query/types';
 import { createQuery } from '../../../../base/adapters/query/create.query';
 

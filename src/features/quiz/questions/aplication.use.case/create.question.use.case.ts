@@ -28,7 +28,7 @@ export class CreateQuestionsUseCase
       correctAnswers: command.correctAnswer,
       published: false,
       createdAt: createdAt,
-      updatedAt: createdAt,
+      updatedAt: null,
     };
     const questionId = await this.questionRepo.createQuestion(newQuestion);
     return questionId;

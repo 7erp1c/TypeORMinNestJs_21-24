@@ -33,6 +33,7 @@ export class ConnectQuizGameUseCase
     command: ConnectQuizGameUseCaseCommand,
   ): Promise<ExceptionResultType<boolean>> {
     const user = await this.userQueryRepository.getById(command.userId);
+    console.log('UseCase', command.userId);
     console.log('UseCase', user);
     if (!user)
       return {
@@ -50,7 +51,7 @@ export class ConnectQuizGameUseCase
     const player = new Player();
     player.user = user;
     player.score = 0;
-
+    console.log('player', player);
     if (!game) {
       game = new Game();
       game.playerOne = player;
@@ -65,13 +66,14 @@ export class ConnectQuizGameUseCase
           data: false,
           code: ResultCode.Forbidden,
         };
-
+      console.log('gameCase2', game);
       game.playerTwo = player;
       game.status = GameStatuses.ACTIVE;
       game.startGameDate = new Date();
       game.questions =
         await this.questionsQueryRepository.findRandomQuestions();
     }
+    console.log('gameCase3', game);
     await this.saveRepository.save(player);
     await this.saveRepository.save(game);
 

@@ -38,7 +38,7 @@ export class SendAnswerUseCase
     const date = new Date();
     //Находим юзера
     const user = await this.usersQueryRepository.getById(command.userId);
-    console.log('UseCase', user);
+    console.log('UseCase user*', user);
     if (!user)
       return {
         data: false,
@@ -50,7 +50,7 @@ export class SendAnswerUseCase
     const playerId = await this.gameQueryRepository.findPlayerIdByUserId(
       command.userId,
     );
-
+    console.log('UseCase playerId*', playerId);
     if (!playerId) {
       return {
         data: false,
@@ -61,9 +61,9 @@ export class SendAnswerUseCase
     }
 
     const currentGame = await this.gameQueryRepository.findGameForAnswer(
-      +command.userId,
+      command.userId,
     );
-
+    console.log('UseCase currentGame*', currentGame);
     if (!currentGame) {
       // Если текущий пользователь не находится в активной паре или пользователь находится в активной паре, но уже ответил на все вопросы
       return {
@@ -73,12 +73,23 @@ export class SendAnswerUseCase
     }
 
     let currentPlayer = currentGame.playerOne;
+    console.log('UseCase currentPlayer*', currentPlayer);
     //если второй или прилетел userId второго user
     if (
       currentGame.playerTwo &&
       command.userId === currentGame.playerTwo.user.id
     ) {
       currentPlayer = currentGame.playerTwo;
+    }
+
+    // Проверяем лимит ответов
+    if (currentPlayer.answers.length >= 5) {
+      return {
+        data: false,
+        code: ResultCode.Forbidden,
+        message:
+          'You have already answered 5 questions and cannot submit more answers.',
+      };
     }
 
     const questionIndex = currentPlayer.answers.length;
@@ -96,6 +107,7 @@ export class SendAnswerUseCase
     const answerCheck = currentQuestion?.correctAnswers.includes(
       command.inputModel.answer,
     );
+    console.log('UseCase answerCheck*', answerCheck);
     if (answerCheck) {
       answerStatus = AnswersStatuses.CORRECT;
       currentPlayer.score += 1;
@@ -108,10 +120,12 @@ export class SendAnswerUseCase
     answer.answerStatus = answerStatus;
     answer.addedAt = new Date();
     await this.saveRepository.save(answer);
+    console.log('Use Case !!!!!!!!!! ', answer);
 
     const playerOneAnswersCount = currentGame.playerOne.answers.length;
+    console.log('UseCase playerOneAnswersCount', playerOneAnswersCount);
     const playerTwoAnswersCount = currentGame.playerTwo.answers.length;
-
+    console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
     try {
       //Переменная extraPoint используется для отслеживания того, было ли уже добавлено дополнительное очко игроку в текущей логике.
       let extraPoint = false;
