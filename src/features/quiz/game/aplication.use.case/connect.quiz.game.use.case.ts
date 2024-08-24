@@ -5,34 +5,40 @@ import { Player } from '../domain/player.entity';
 import { Game } from '../domain/game.entity';
 import { GameStatuses } from '../../enums/game.statuses';
 import { QuestionsQueryRepository } from '../../questions/infrastructure.sql/query/questions.query.repository';
-import { SaveRepository } from '../infrastructure.sql/save.repository';
+import { TransactionsRepository } from '../infrastructure.sql/transactionsRepository';
 import {
   ExceptionResultType,
   ResultCode,
 } from '../../../../common/exception-filters/exception.handler';
+import { TransactionBaseUseCase } from '../../../../base/usecases/transaction-base.usecase';
+import { DataSource, EntityManager } from 'typeorm';
 
 export class ConnectQuizGameUseCaseCommand {
   constructor(public userId: string) {}
 }
 @CommandHandler(ConnectQuizGameUseCaseCommand)
-export class ConnectQuizGameUseCase
-  implements
-    ICommandHandler<
-      ConnectQuizGameUseCaseCommand,
-      ExceptionResultType<boolean>
-    >
-{
+export class ConnectQuizGameUseCase extends TransactionBaseUseCase<
+  ConnectQuizGameUseCaseCommand,
+  ExceptionResultType<boolean>
+> {
   constructor(
+    protected readonly dataSource: DataSource,
     private readonly userQueryRepository: UsersQueryRepositorySql,
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
-    private readonly saveRepository: SaveRepository,
-  ) {}
+    private readonly transactionsRepository: TransactionsRepository,
+  ) {
+    super(dataSource);
+  }
 
-  async execute(
+  async doLogic(
     command: ConnectQuizGameUseCaseCommand,
+    manager: EntityManager,
   ): Promise<ExceptionResultType<boolean>> {
-    const user = await this.userQueryRepository.getById(command.userId);
+    const user = await this.userQueryRepository.getById(
+      command.userId,
+      manager,
+    );
     console.log('UseCase', command.userId);
     console.log('UseCase', user);
     if (!user)
@@ -45,6 +51,7 @@ export class ConnectQuizGameUseCase
 
     let game = await this.gameQueryRepository.findGameForConnection(
       command.userId,
+      manager,
     );
     console.log('gameCase', game);
 
@@ -71,11 +78,11 @@ export class ConnectQuizGameUseCase
       game.status = GameStatuses.ACTIVE;
       game.startGameDate = new Date();
       game.questions =
-        await this.questionsQueryRepository.findRandomQuestions();
+        await this.questionsQueryRepository.findRandomQuestions(manager);
     }
     console.log('gameCase3', game);
-    await this.saveRepository.save(player);
-    await this.saveRepository.save(game);
+    await this.transactionsRepository.save(player, manager);
+    await this.transactionsRepository.save(game, manager);
 
     return {
       data: true,

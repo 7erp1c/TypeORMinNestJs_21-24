@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from '../../domain/quiz.question.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { quizQuestion } from '../../api/model/type.question';
 import {
   QuerySearchType,
@@ -109,9 +109,9 @@ export class QuestionsQueryRepository {
     }
   }
 
-  async findRandomQuestions(): Promise<Question[]> {
-    return await this.question
-      .createQueryBuilder('q')
+  async findRandomQuestions(manager: EntityManager): Promise<Question[]> {
+    return await manager
+      .createQueryBuilder(Question, 'q')
       .where('q.published = true')
       .orderBy('RANDOM()')
       .take(5)

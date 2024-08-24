@@ -1,5 +1,5 @@
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import {
   Injectable,
   NotFoundException,
@@ -86,9 +86,9 @@ export class UsersQueryRepositorySql {
     };
   }
 
-  async getById(id: string): Promise<Users | null> {
+  async getById(id: string, manager: EntityManager): Promise<Users | null> {
     try {
-      return await this.dataSource
+      return await manager
         .createQueryBuilder(Users, 'u')
         .where('u.id = :id', { id })
         .getOne();

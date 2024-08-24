@@ -25,11 +25,14 @@ export class GameQueryRepository {
     private readonly answerRepository: Repository<Answer>,
     private readonly entityManager: EntityManager,
   ) {}
-  async findGameForConnection(userId: string): Promise<Game | null> {
+  async findGameForConnection(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<Game | null> {
     console.log('****', userId);
     try {
-      return this.gameRepository
-        .createQueryBuilder('g')
+      return manager
+        .createQueryBuilder(Game, 'g')
         .leftJoinAndSelect('g.playerOne', 'po')
         .leftJoinAndSelect('g.playerTwo', 'pt')
         .leftJoinAndSelect('po.user', 'pou')
@@ -135,28 +138,35 @@ export class GameQueryRepository {
           },
           score: game.playerOne?.score || 0,
         },
-        secondPlayerProgress: {
-          answers: (game.playerTwo?.answers || []).map((answer) => {
-            console.log('Processing Answer:', answer);
-            return {
-              questionId: answer.question?.id || null,
-              answerStatus: answer.answerStatus || null,
-              addedAt: answer.addedAt || null,
-            };
-          }),
-          player: {
-            id: game.playerTwo?.user?.id || null,
-            login: game.playerTwo?.user?.login || null,
-          },
-          score: game.playerTwo?.score || 0,
-        },
-        questions: (game.questions || []).map((question) => {
-          console.log('Processing Question:', question);
-          return {
-            id: question.id || null,
-            body: question.body || null,
-          };
-        }),
+        secondPlayerProgress: game.playerTwo
+          ? {
+              answers: (game.playerTwo?.answers || []).map((answer) => {
+                console.log('Processing Answer:', answer);
+                return {
+                  questionId: answer.question?.id || null,
+                  answerStatus: answer.answerStatus || null,
+                  addedAt: answer.addedAt || null,
+                };
+              }),
+              player: {
+                id: game.playerTwo?.user?.id || null,
+                login: game.playerTwo?.user?.login || null,
+              },
+              score: game.playerTwo?.score || 0,
+            }
+          : null,
+
+        questions:
+          game.questions && game.questions.length
+            ? game.questions.map((question) => {
+                console.log('Processing Question:', question);
+                return {
+                  id: question.id || null,
+                  body: question.body || null,
+                };
+              })
+            : null,
+
         status: game.status || null,
         pairCreatedDate: game.pairCreatedDate || null,
         startGameDate: game.startGameDate || null,
@@ -170,9 +180,12 @@ export class GameQueryRepository {
     }
   }
 
-  async findPlayerIdByUserId(userId: string): Promise<string | null> {
-    const result = await this.playerRepository
-      .createQueryBuilder('p')
+  async findPlayerIdByUserId(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<string | null> {
+    const result = await manager
+      .createQueryBuilder(Player, 'p')
       .select('p.id')
       .where('p.userId = :userId', { userId })
       .getOne();
@@ -183,9 +196,13 @@ export class GameQueryRepository {
     return result.id;
   }
   // .setLock('pessimistic_write', undefined, ['game']) //пессимистическая блокировак, пока не завершиться await, нельзя изменять
-  async findGameForAnswer(userId: string): Promise<Game | null> {
-    return await this.gameRepository
-      .createQueryBuilder('game')
+  async findGameForAnswer(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<Game | null> {
+    return await manager
+      .createQueryBuilder(Game, 'game')
+      .setLock('pessimistic_write', undefined, ['game'])
       .leftJoinAndSelect('game.questions', 'gq')
       .leftJoinAndSelect('game.playerOne', 'po')
       .leftJoinAndSelect('po.user', 'pou')
@@ -411,5 +428,22 @@ export class GameQueryRepository {
         addedAt: a.addedAt,
       };
     });
+  }
+
+  async findGameById(gameId: string) {
+    try {
+      const game = await this.gameRepository.findOne({ where: { id: gameId } });
+
+      if (game) {
+        console.log('Game found:', game);
+        return game; // Возвращаем найденную игру, если она существует
+      } else {
+        console.log('No game found with id:', gameId);
+        return null; // Или выбросить исключение, если игра не найдена
+      }
+    } catch (error) {
+      console.error('Error finding game:', error);
+      throw error; // Пробрасываем ошибку, чтобы её можно было обработать выше
+    }
   }
 }

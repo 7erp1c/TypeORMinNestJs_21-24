@@ -36,29 +36,53 @@ export class TestingController {
   @Delete('/all-data')
   @HttpCode(204)
   async clearBd(): Promise<void> {
-    const entities = [
-      'questions_games_games',
-      'questions',
-      'answers',
-      'games',
-      'players',
-      'BlackList',
-      'Session',
-      'Users',
-      'CommentsLikes',
-      'Comments',
-      'PostsLikes',
-      'Posts',
-      'Blogs',
-    ];
-    for (const entity of entities) {
-      const repository = this.dataSource.getRepository(entity);
-      const records = await repository.find();
-
-      for (const record of records) {
-        await repository.remove(record);
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
+      const entities = [
+        'answers',
+        'players',
+        'questions_games_games',
+        'questions',
+        'games',
+        'BlackList',
+        'Session',
+        'Users',
+        'CommentsLikes',
+        'Comments',
+        'PostsLikes',
+        'Posts',
+        'Blogs',
+      ];
+      for (const entity of entities) {
+        const repository = transactionalEntityManager.getRepository(entity);
+        const records = await repository.find();
+        for (const record of records) {
+          await repository.remove(record);
+        }
       }
-    }
+    });
+    // const entities = [
+    //   'answers',
+    //   'players',
+    //   'questions_games_games',
+    //   'questions',
+    //   'games',
+    //   'BlackList',
+    //   'Session',
+    //   'Users',
+    //   'CommentsLikes',
+    //   'Comments',
+    //   'PostsLikes',
+    //   'Posts',
+    //   'Blogs',
+    // ];
+    // for (const entity of entities) {
+    //   const repository = this.dataSource.getRepository(entity);
+    //   const records = await repository.find();
+    //
+    //   for (const record of records) {
+    //     await repository.remove(record);
+    //   }
+    // }
 
     //   for (const entity of entities) {
     //     await this.dataSource.getRepository(entity).clear();

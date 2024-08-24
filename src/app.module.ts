@@ -6,7 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './features/users/users.module';
 import { BlogsModule } from './features/blogs/blogs.module';
 import { SecurityModule } from './features/security/security.module';
-import { TestingModule } from './features/testing/testing.module';
+import { TestingDeleteModule } from './features/testing/testingDeleteModule';
 import process from 'process';
 import { MongooseModule } from '@nestjs/mongoose';
 import { appSettings } from './settings/app-settings';
@@ -31,7 +31,7 @@ const throttleModule = ThrottlerModule.forRoot([
 const appModules = [UsersModule, BlogsModule, SecurityModule, QuizModule];
 //дабы не заюзать
 if (process.env.ENV !== 'PRODUCTION') {
-  appModules.push(TestingModule);
+  appModules.push(TestingDeleteModule);
 }
 @Module({
   // Регистрация модулей

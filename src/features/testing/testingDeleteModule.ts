@@ -10,4 +10,4 @@ import { TestingRepositorySql } from './infrastructure.sql/testing.repository.sq
   providers: [TestingService, TestingRepository, TestingRepositorySql],
   exports: [],
 })
-export class TestingModule {}
+export class TestingDeleteModule {}

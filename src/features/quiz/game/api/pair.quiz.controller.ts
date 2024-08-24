@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Req,
@@ -56,6 +58,7 @@ export class PairQuizController {
   @HttpCode(HttpStatus.OK)
   async findGameById(@Param('id') id: string, @Req() req: Request) {
     const input = new InputUuid();
+
     input.id = id;
 
     // Выполнение валидации
@@ -63,11 +66,19 @@ export class PairQuizController {
     if (errors.length > 0) {
       throw new BadRequestException([{ message: 'id invalid', field: 'id' }]);
     }
-    return await this.gameQueryRepository.getGameByProvidedId(
-      id,
-      undefined,
-      req.user.userId,
-    );
+    try {
+      return await this.gameQueryRepository.getGameByProvidedId(
+        id,
+        undefined,
+        req.user.userId,
+      );
+    } catch (e) {
+      if (e instanceof ForbiddenException) {
+        throw e;
+      } else {
+        throw new NotFoundException('Resource not found');
+      }
+    }
   }
 
   @Post('/connection')
@@ -98,10 +109,10 @@ export class PairQuizController {
   async answers(@Body() inputModel: AnswerPlayer, @Req() req: Request) {
     console.log(req.user.userId);
     console.log(inputModel.answer);
-    await this.gameQueryRepository.falseStart(req.user.userId);
-
-    // Проверяем количество ответов в активной игре
-    await this.gameQueryRepository.getAnswersCountInActiveGame(req.user.userId);
+    // await this.gameQueryRepository.falseStart(req.user.userId);
+    //
+    // // Проверяем количество ответов в активной игре
+    // await this.gameQueryRepository.getAnswersCountInActiveGame(req.user.userId);
 
     const toAnswer = await this.commandBus.execute(
       new SendAnswerUseCaseCommand(inputModel, req.user.userId),

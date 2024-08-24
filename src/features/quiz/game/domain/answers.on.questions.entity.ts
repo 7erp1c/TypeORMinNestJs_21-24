@@ -1,12 +1,11 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
   Column,
-  DeleteDateColumn,
-  OneToMany,
-  JoinColumn,
   CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Player } from './player.entity';
 import { Question } from '../../questions/domain/quiz.question.entity';

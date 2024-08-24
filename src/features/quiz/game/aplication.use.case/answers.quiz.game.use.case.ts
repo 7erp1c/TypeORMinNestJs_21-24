@@ -1,6 +1,6 @@
 import { Answer } from '../domain/answers.on.questions.entity';
 import { AnswerPlayer } from '../api/model/input/input.answers';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler } from '@nestjs/cqrs';
 import {
   ExceptionResultType,
   ResultCode,
@@ -8,11 +8,13 @@ import {
 import { UsersQueryRepositorySql } from '../../../users/sql.infrastructure/users-query-repository-sql';
 import { GameQueryRepository } from '../infrastructure.sql/query/game.query.repository';
 import { AnswersStatuses } from '../../enums/answers.statuses';
-import { SaveRepository } from '../infrastructure.sql/save.repository';
+import { TransactionsRepository } from '../infrastructure.sql/transactionsRepository';
 import { GameStatuses } from '../../enums/game.statuses';
 import { add } from 'date-fns';
 import { GameFinishedEvent } from '../event-emitter/event/game.finished';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TransactionBaseUseCase } from '../../../../base/usecases/transaction-base.usecase';
+import { DataSource, EntityManager } from 'typeorm';
 
 export class SendAnswerUseCaseCommand {
   constructor(
@@ -21,23 +23,30 @@ export class SendAnswerUseCaseCommand {
   ) {}
 }
 @CommandHandler(SendAnswerUseCaseCommand)
-export class SendAnswerUseCase
-  implements
-    ICommandHandler<SendAnswerUseCaseCommand, ExceptionResultType<boolean>>
-{
+export class SendAnswerUseCase extends TransactionBaseUseCase<
+  SendAnswerUseCaseCommand,
+  ExceptionResultType<boolean>
+> {
   constructor(
+    protected readonly dataSource: DataSource,
     private readonly usersQueryRepository: UsersQueryRepositorySql,
     private readonly gameQueryRepository: GameQueryRepository,
-    private readonly saveRepository: SaveRepository,
+    private readonly transactionsRepository: TransactionsRepository,
     private readonly eventEmit: EventEmitter2,
-  ) {}
+  ) {
+    super(dataSource); // это вызов конструктора родительского класса (TransactionBaseUseCase) из конструктора дочернего класса (QuizSendAnswerUseCase).
+  }
 
-  async execute(
+  async doLogic(
     command: SendAnswerUseCaseCommand,
+    manager: EntityManager,
   ): Promise<ExceptionResultType<boolean>> {
     const date = new Date();
     //Находим юзера
-    const user = await this.usersQueryRepository.getById(command.userId);
+    const user = await this.usersQueryRepository.getById(
+      command.userId,
+      manager,
+    );
     console.log('UseCase user*', user);
     if (!user)
       return {
@@ -47,21 +56,23 @@ export class SendAnswerUseCase
         message: 'User not found, bro!',
       };
     //Находим по юзеру id игрока
-    const playerId = await this.gameQueryRepository.findPlayerIdByUserId(
-      command.userId,
-    );
-    console.log('UseCase playerId*', playerId);
-    if (!playerId) {
-      return {
-        data: false,
-        code: ResultCode.NotFound,
-        field: 'playerId_UseCase',
-        message: 'User in table player not found, bro!',
-      };
-    }
+    // const playerId = await this.gameQueryRepository.findPlayerIdByUserId(
+    //   command.userId,
+    //   manager,
+    // );
+    // console.log('UseCase playerId*', playerId);
+    // if (!playerId) {
+    //   return {
+    //     data: false,
+    //     code: ResultCode.NotFound,
+    //     field: 'playerId_UseCase',
+    //     message: 'User in table player not found, bro!',
+    //   };
+    // }
 
     const currentGame = await this.gameQueryRepository.findGameForAnswer(
       command.userId,
+      manager,
     );
     console.log('UseCase currentGame*', currentGame);
     if (!currentGame) {
@@ -82,19 +93,9 @@ export class SendAnswerUseCase
       currentPlayer = currentGame.playerTwo;
     }
 
-    // Проверяем лимит ответов
-    if (currentPlayer.answers.length >= 5) {
-      return {
-        data: false,
-        code: ResultCode.Forbidden,
-        message:
-          'You have already answered 5 questions and cannot submit more answers.',
-      };
-    }
-
     const questionIndex = currentPlayer.answers.length;
 
-    if (questionIndex === 5) {
+    if (questionIndex >= 5) {
       return {
         data: false,
         code: ResultCode.Forbidden,
@@ -111,97 +112,168 @@ export class SendAnswerUseCase
     if (answerCheck) {
       answerStatus = AnswersStatuses.CORRECT;
       currentPlayer.score += 1;
-      await this.saveRepository.save(currentPlayer); //сохраняем полученные результаты
+      await this.transactionsRepository.save(currentPlayer, manager); //сохраняем полученные результаты
     }
-    //создаем новый объект ответа на вопрос, сохраняет его в базе данных и подсчитывает количество ответов от двух игроков в текущей игре.zaebavsya
+    //создаем новый объект ответа на вопрос, сохраняет его в базе данных и подсчитывает количество ответов от двух игроков в текущей игре.
     const answer = new Answer();
     answer.player = currentPlayer;
     answer.question = currentQuestion;
     answer.answerStatus = answerStatus;
     answer.addedAt = new Date();
-    await this.saveRepository.save(answer);
+    await this.transactionsRepository.save(answer, manager);
     console.log('Use Case !!!!!!!!!! ', answer);
 
-    const playerOneAnswersCount = currentGame.playerOne.answers.length;
-    console.log('UseCase playerOneAnswersCount', playerOneAnswersCount);
-    const playerTwoAnswersCount = currentGame.playerTwo.answers.length;
-    console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
+    // const playerOneAnswersCount = currentGame.playerOne.answers.length;
+    // console.log('UseCase playerOneAnswersCount', playerOneAnswersCount);
+    // const playerTwoAnswersCount = currentGame.playerTwo.answers.length;
+    // console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
     try {
-      //Переменная extraPoint используется для отслеживания того, было ли уже добавлено дополнительное очко игроку в текущей логике.
-      let extraPoint = false;
+      const currentGameFinished =
+        await this.gameQueryRepository.findGameForAnswer(
+          command.userId,
+          manager,
+        );
+      const playerOneAnswersCount =
+        currentGameFinished!.playerOne.answers.length;
+      console.log('UseCase playerOneAnswersCount', playerOneAnswersCount);
+      const playerTwoAnswersCount =
+        currentGameFinished!.playerTwo.answers.length;
+      console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
+      // Проверяем, достиг ли какой-либо из игроков 5 ответов
+      // Проверка завершения игры
+      const allPlayersReachedMax =
+        playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
 
+      const bothPlayersReachedMax =
+        playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
+
+      const currentPlayerReachedMax =
+        (playerOneAnswersCount === 5 &&
+          currentGameFinished!.playerOne.id === currentPlayer.id) ||
+        (playerTwoAnswersCount === 5 &&
+          currentGameFinished!.playerTwo.id === currentPlayer.id);
+      console.log('Player One Answers Count:', playerOneAnswersCount);
+      console.log('Player Two Answers Count:', playerTwoAnswersCount);
+
+      console.log('All Players Reached Max:', allPlayersReachedMax);
+      // Если оба игрока достигли 5 ответов, завершаем игру.
+      // Или текущий игрок достиг 5 ответов, а другой игрок не достиг 5 ответов.
       if (
-        //Проверяется, достиг ли какой-либо из игроков 5 ответов.
-        (playerOneAnswersCount + 1 === 5 &&
-          currentGame.playerOne.id === currentPlayer.id) ||
-        (playerTwoAnswersCount + 1 === 5 &&
-          currentGame.playerTwo.id === currentPlayer.id)
+        bothPlayersReachedMax ||
+        (currentPlayerReachedMax &&
+          playerOneAnswersCount < 5 &&
+          playerTwoAnswersCount < 5)
       ) {
-        if (
-          //Проверка даты истечения
-          currentGame.expGameDate !== null && //игра началась то?
-          date > currentGame.expGameDate //Если текущая дата превысила установленную дату истечения игры (expGameDate), игра завершается
-        ) {
-          currentGame.finishGameDate = date;
-          currentGame.status = GameStatuses.FINISHED;
-
-          await this.saveRepository.save(currentGame);
-
-          return {
-            data: false,
-            code: ResultCode.Forbidden,
-          };
-        }
-        //Присуждение дополнительного очка:
-        let fastPlayer = currentGame.playerOne;
-
-        if (playerTwoAnswersCount + 1 === 5) {
-          fastPlayer = currentGame.playerTwo;
-        }
-
-        if (fastPlayer.score !== 0 && !extraPoint) {
-          fastPlayer.score += 1;
-          extraPoint = true;
-        }
-
-        await this.saveRepository.save(fastPlayer);
-        //Обновление статуса игры:
-        // Если игра еще не завершена, она остается активной:
-        //   Статус игры устанавливается на ACTIVE.
-        //   Дата завершения игры сбрасывается.
-        //   Устанавливается новая дата истечения через 10 секунд от текущего времени.
-        currentGame.status = GameStatuses.ACTIVE;
-        currentGame.finishGameDate = null;
-        currentGame.expGameDate = add(new Date(), {
-          seconds: 10,
-        });
-        await this.saveRepository.save(currentGame);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      //Этот блок выполняется независимо от того, было ли выброшено исключение или нет. Он используется для выполнения действий, которые должны произойти в любом случае.
-      //Проверка даты истечения и завершение игры:
-      const date = new Date();
-
-      if (currentGame.expGameDate !== null && date > currentGame.expGameDate) {
+        console.log('Updating game status to FINISHED');
         currentGame.finishGameDate = date;
         currentGame.status = GameStatuses.FINISHED;
-
-        await this.saveRepository.save(currentGame);
+        try {
+          await this.transactionsRepository.save(currentGame, manager);
+          console.log('Game status updated');
+        } catch (error) {
+          console.error('Error saving game status:', error);
+        }
       }
-      //Создается событие GameFinishedEvent, содержащее информацию о завершенной игре:
-      // gameId: Идентификатор игры.
-      // expDate: Дата истечения игры.
-      // date: Текущая дата.
-      // Событие отправляется через eventEmitter, уведомляя подписчиков о том, что игра завершена.
 
-      const gameFinishedEvent = new GameFinishedEvent();
-      gameFinishedEvent.gameId = currentGame.id;
-      gameFinishedEvent.expDate = currentGame.expGameDate;
-      gameFinishedEvent.date = date;
-      this.eventEmit.emit('game.finished', gameFinishedEvent);
+      // // Создаем событие завершения игры
+      // const gameFinishedEvent = new GameFinishedEvent();
+      // gameFinishedEvent.gameId = currentGame.id;
+      // gameFinishedEvent.date = date;
+      // await this.transactionsRepository.save()
+      // //this.eventEmit.emit('game.finished', gameFinishedEvent);
+
+      // return {
+      //   data: false,
+      //   code: ResultCode.Forbidden,
+      // };
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
+    // try {
+    //   //Переменная extraPoint используется для отслеживания того, было ли уже добавлено дополнительное очко игроку в текущей логике.
+    //   let extraPoint = false;
+    //
+    //   if (
+    //     //Проверяется, достиг ли какой-либо из игроков 5 ответов.
+    //     (playerOneAnswersCount + 1 === 5 &&
+    //       currentGame.playerOne.id === currentPlayer.id) ||
+    //     (playerTwoAnswersCount + 1 === 5 &&
+    //       currentGame.playerTwo.id === currentPlayer.id)
+    //   ) {
+    //     if (
+    //       //Проверка даты истечения
+    //       currentGame.expGameDate !== null && //игра началась то?
+    //       date > currentGame.expGameDate //Если текущая дата превысила установленную дату истечения игры (expGameDate), игра завершается
+    //     ) {
+    //       currentGame.finishGameDate = date;
+    //       currentGame.status = GameStatuses.FINISHED;
+    //
+    //       await this.transactionsRepository.save(currentGame, manager);
+    //
+    //       return {
+    //         data: false,
+    //         code: ResultCode.Forbidden,
+    //       };
+    //     }
+    //     //Присуждение дополнительного очка:
+    //     let fastPlayer = currentGame.playerOne;
+    //
+    //     if (playerTwoAnswersCount + 1 === 5) {
+    //       fastPlayer = currentGame.playerTwo;
+    //     }
+    //
+    //     if (fastPlayer.score !== 0 && !extraPoint) {
+    //       fastPlayer.score += 1;
+    //       extraPoint = true;
+    //     }
+    //
+    //     await this.transactionsRepository.save(fastPlayer, manager);
+    //     //Обновление статуса игры:
+    //     // Если игра еще не завершена, она остается активной:
+    //     //   Статус игры устанавливается на ACTIVE.
+    //     //   Дата завершения игры сбрасывается.
+    //     //   Устанавливается новая дата истечения через 10 секунд от текущего времени.
+    //     currentGame.status = GameStatuses.ACTIVE;
+    //     currentGame.finishGameDate = null;
+    //     currentGame.expGameDate = add(new Date(), {
+    //       seconds: 10,
+    //     });
+    //     await this.transactionsRepository.save(currentGame, manager);
+    //   }
+    // } catch (e) {
+    //   console.error(e);
+    //   throw e;
+    // } finally {
+    //   //Этот блок выполняется независимо от того, было ли выброшено исключение или нет. Он используется для выполнения действий, которые должны произойти в любом случае.
+    //   //Проверка даты истечения и завершение игры:
+    //   const date = new Date();
+    //
+    //   if (
+    //     currentGame.expGameDate !== null /*&& date >= currentGame.expGameDate*/
+    //   ) {
+    //     currentGame.finishGameDate = date;
+    //     currentGame.status = GameStatuses.FINISHED;
+    //
+    //     await this.transactionsRepository.save(currentGame, manager);
+    //   }
+    //   //Создается событие GameFinishedEvent, содержащее информацию о завершенной игре:
+    //   // gameId: Идентификатор игры.
+    //   // expDate: Дата истечения игры.
+    //   // date: Текущая дата.
+    //   // Событие отправляется через eventEmitter, уведомляя подписчиков о том, что игра завершена.
+    //   if (
+    //     //Проверяется, достиг ли какой-либо из игроков 5 ответов.
+    //     playerOneAnswersCount === 5 ||
+    //     playerTwoAnswersCount === 5
+    //   ) {
+    //     const gameFinishedEvent = new GameFinishedEvent();
+    //     gameFinishedEvent.gameId = currentGame.id;
+    //     gameFinishedEvent.expDate = currentGame.expGameDate;
+    //     gameFinishedEvent.date = date;
+    //     this.eventEmit.emit('game.finished', gameFinishedEvent);
+    //   }
+    // }
 
     return {
       data: true,

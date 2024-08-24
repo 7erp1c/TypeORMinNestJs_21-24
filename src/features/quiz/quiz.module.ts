@@ -18,7 +18,7 @@ import { PairQuizController } from './game/api/pair.quiz.controller';
 import { JwtService } from '@nestjs/jwt';
 import { GameQueryRepository } from './game/infrastructure.sql/query/game.query.repository';
 import { UsersQueryRepositorySql } from '../users/sql.infrastructure/users-query-repository-sql';
-import { SaveRepository } from './game/infrastructure.sql/save.repository';
+import { TransactionsRepository } from './game/infrastructure.sql/transactionsRepository';
 import { SendAnswerUseCase } from './game/aplication.use.case/answers.quiz.game.use.case';
 import { EventEmitter } from 'typeorm/browser/platform/BrowserPlatformTools';
 import { Buffer } from 'buffer';
@@ -36,7 +36,7 @@ const quizUseCaseProvider = [
   ConnectQuizGameUseCase,
   QuestionsQueryRepository,
   GameQueryRepository,
-  SaveRepository,
+  TransactionsRepository,
   SendAnswerUseCase,
   GameQueryRepository,
 ];

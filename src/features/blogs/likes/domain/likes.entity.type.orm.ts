@@ -1,5 +1,5 @@
 import { LikeStatusType } from '../api/model/input/input.types';
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'CommentsLikes' })
 export class CommentLike {
