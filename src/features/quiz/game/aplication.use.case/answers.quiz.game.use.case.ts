@@ -118,29 +118,23 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
           command.userId,
           manager,
         );
+      if (!currentGameFinished) {
+        // Если текущий пользователь не находится в активной паре или пользователь находится в активной паре, но уже ответил на все вопросы
+        return {
+          data: false,
+          code: ResultCode.Forbidden,
+        };
+      }
       const playerOneAnswersCount =
-        currentGameFinished!.playerOne.answers.length;
+        currentGameFinished.playerOne.answers.length;
       console.log('UseCase playerOneAnswersCount', playerOneAnswersCount);
       const playerTwoAnswersCount =
-        currentGameFinished!.playerTwo.answers.length;
+        currentGameFinished.playerTwo.answers.length;
       console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
       // Проверяем, достиг ли какой-либо из игроков 5 ответов
       // Проверка завершения игры
-      // const allPlayersReachedMax =
-      //   playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
-
       const bothPlayersReachedMax =
         playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
-
-      const currentPlayerReachedMax =
-        (playerOneAnswersCount === 5 &&
-          currentGameFinished!.playerOne.id === currentPlayer.id) ||
-        (playerTwoAnswersCount === 5 &&
-          currentGameFinished!.playerTwo.id === currentPlayer.id);
-      console.log('Player One Answers Count:', playerOneAnswersCount);
-      console.log('Player Two Answers Count:', playerTwoAnswersCount);
-
-      // console.log('All Players Reached Max:', allPlayersReachedMax);
       // Если оба игрока достигли 5 ответов, завершаем игру.
       // Или текущий игрок достиг 5 ответов, а другой игрок не достиг 5 ответов.
       if (bothPlayersReachedMax) {
@@ -154,55 +148,44 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
           console.error('Error saving game status:', error);
         }
       }
-      // Проверяем, что игрок ответил на все вопросы первым
-      const isFirstPlayerFinished = playerOneAnswersCount === 5;
-      const isSecondPlayerFinished = playerTwoAnswersCount === 5;
 
+      // Определяем победителя и начисляем дополнительные баллы:
+
+      //Находим answers playerOne в статусе CORRECT
       const playerOneCorrectAnswers =
-        currentGameFinished!.playerOne.answers.filter(
+        currentGameFinished.playerOne.answers.filter(
           (answer) => answer.answerStatus === AnswersStatuses.CORRECT,
         ).length;
-
+      //Находим answers playerTwo в статусе CORRECT
       const playerTwoCorrectAnswers =
-        currentGameFinished!.playerTwo.answers.filter(
+        currentGameFinished.playerTwo.answers.filter(
           (answer) => answer.answerStatus === AnswersStatuses.CORRECT,
         ).length;
 
-      console.log(
-        currentGame.playerOne.answers[4]?.addedAt.getDate(),
-        ' currentGame.playerOne.answers[4]?.addedAt.getDate()',
-      );
-      console.log(
-        currentGame.playerTwo.answers[4]?.addedAt.getDate(),
-        '  currentGame.playerTwo.answers[4]?.addedAt.getDate()',
-      );
-      console.log(
-        currentGame.playerOne.answers[4]?.addedAt.getDate() <
-          currentGame.playerTwo.answers[4]?.addedAt.getDate(),
-        ' check',
-      );
-      // Определяем победителя и начисляем дополнительные баллы
       if (bothPlayersReachedMax) {
         if (
-          currentGameFinished!.playerOne.answers[4]?.addedAt.toISOString() <
-          currentGameFinished!.playerTwo.answers[4]?.addedAt.toISOString()
+          //Сравниваем последние ответы playero4kov по addedAt
+          //если первым закончил playerOne
+          currentGameFinished.playerOne.answers[4]?.addedAt.toISOString() <
+          currentGameFinished.playerTwo.answers[4]?.addedAt.toISOString()
         ) {
-          currentGameFinished!.playerOne.score += Number(
+          currentGameFinished.playerOne.score += Number(
             playerOneCorrectAnswers > 0,
-          ); // Дополнительный балл
+          ); // Save дополнительный балл
           await this.transactionsRepository.save(
-            currentGameFinished!.playerOne,
+            currentGameFinished.playerOne,
             manager,
           );
         } else if (
-          currentGameFinished!.playerOne.answers[4]?.addedAt.toISOString() >
-          currentGameFinished!.playerTwo.answers[4]?.addedAt.toISOString()
+          //если первым закончил playerTwo
+          currentGameFinished.playerOne.answers[4]?.addedAt.toISOString() >
+          currentGameFinished.playerTwo.answers[4]?.addedAt.toISOString()
         ) {
-          currentGameFinished!.playerTwo.score += Number(
+          currentGameFinished.playerTwo.score += Number(
             playerTwoCorrectAnswers > 0,
-          ); // Дополнительный балл
+          ); // Save дополнительный балл
           await this.transactionsRepository.save(
-            currentGameFinished!.playerTwo,
+            currentGameFinished.playerTwo,
             manager,
           );
         } else {
