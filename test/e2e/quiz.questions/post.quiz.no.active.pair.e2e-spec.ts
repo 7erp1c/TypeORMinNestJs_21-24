@@ -37,7 +37,7 @@ describe('quiz', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [/*TypeOrmModule.forRoot(ormConfig),*/ AppModule],
+      imports: [AppModule],
     }).compile();
     //создаём nest приложение
     app = moduleFixture.createNestApplication();

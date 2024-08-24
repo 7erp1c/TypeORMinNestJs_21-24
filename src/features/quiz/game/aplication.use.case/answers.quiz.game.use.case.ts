@@ -10,11 +10,10 @@ import { GameQueryRepository } from '../infrastructure.sql/query/game.query.repo
 import { AnswersStatuses } from '../../enums/answers.statuses';
 import { TransactionsRepository } from '../infrastructure.sql/transactionsRepository';
 import { GameStatuses } from '../../enums/game.statuses';
-import { add } from 'date-fns';
-import { GameFinishedEvent } from '../event-emitter/event/game.finished';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TransactionBaseUseCase } from '../../../../base/usecases/transaction-base.usecase';
 import { DataSource, EntityManager } from 'typeorm';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export class SendAnswerUseCaseCommand {
   constructor(
@@ -55,20 +54,6 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
         field: 'userId_UseCase',
         message: 'User not found, bro!',
       };
-    //Находим по юзеру id игрока
-    // const playerId = await this.gameQueryRepository.findPlayerIdByUserId(
-    //   command.userId,
-    //   manager,
-    // );
-    // console.log('UseCase playerId*', playerId);
-    // if (!playerId) {
-    //   return {
-    //     data: false,
-    //     code: ResultCode.NotFound,
-    //     field: 'playerId_UseCase',
-    //     message: 'User in table player not found, bro!',
-    //   };
-    // }
 
     const currentGame = await this.gameQueryRepository.findGameForAnswer(
       command.userId,
@@ -141,8 +126,8 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
       console.log('UseCase playerTwoAnswersCount', playerTwoAnswersCount);
       // Проверяем, достиг ли какой-либо из игроков 5 ответов
       // Проверка завершения игры
-      const allPlayersReachedMax =
-        playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
+      // const allPlayersReachedMax =
+      //   playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
 
       const bothPlayersReachedMax =
         playerOneAnswersCount === 5 && playerTwoAnswersCount === 5;
@@ -155,15 +140,10 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
       console.log('Player One Answers Count:', playerOneAnswersCount);
       console.log('Player Two Answers Count:', playerTwoAnswersCount);
 
-      console.log('All Players Reached Max:', allPlayersReachedMax);
+      // console.log('All Players Reached Max:', allPlayersReachedMax);
       // Если оба игрока достигли 5 ответов, завершаем игру.
       // Или текущий игрок достиг 5 ответов, а другой игрок не достиг 5 ответов.
-      if (
-        bothPlayersReachedMax ||
-        (currentPlayerReachedMax &&
-          playerOneAnswersCount < 5 &&
-          playerTwoAnswersCount < 5)
-      ) {
+      if (bothPlayersReachedMax) {
         console.log('Updating game status to FINISHED');
         currentGame.finishGameDate = date;
         currentGame.status = GameStatuses.FINISHED;
@@ -174,6 +154,85 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
           console.error('Error saving game status:', error);
         }
       }
+      // Проверяем, что игрок ответил на все вопросы первым
+      const isFirstPlayerFinished = playerOneAnswersCount === 5;
+      const isSecondPlayerFinished = playerTwoAnswersCount === 5;
+
+      const playerOneCorrectAnswers =
+        currentGameFinished!.playerOne.answers.filter(
+          (answer) => answer.answerStatus === AnswersStatuses.CORRECT,
+        ).length;
+
+      const playerTwoCorrectAnswers =
+        currentGameFinished!.playerTwo.answers.filter(
+          (answer) => answer.answerStatus === AnswersStatuses.CORRECT,
+        ).length;
+
+      console.log(
+        currentGame.playerOne.answers[4]?.addedAt.getDate(),
+        ' currentGame.playerOne.answers[4]?.addedAt.getDate()',
+      );
+      console.log(
+        currentGame.playerTwo.answers[4]?.addedAt.getDate(),
+        '  currentGame.playerTwo.answers[4]?.addedAt.getDate()',
+      );
+      console.log(
+        currentGame.playerOne.answers[4]?.addedAt.getDate() <
+          currentGame.playerTwo.answers[4]?.addedAt.getDate(),
+        ' check',
+      );
+      // Определяем победителя и начисляем дополнительные баллы
+      if (bothPlayersReachedMax) {
+        if (
+          currentGameFinished!.playerOne.answers[4]?.addedAt.toISOString() <
+          currentGameFinished!.playerTwo.answers[4]?.addedAt.toISOString()
+        ) {
+          currentGameFinished!.playerOne.score += Number(
+            playerOneCorrectAnswers > 0,
+          ); // Дополнительный балл
+          await this.transactionsRepository.save(
+            currentGameFinished!.playerOne,
+            manager,
+          );
+        } else if (
+          currentGameFinished!.playerOne.answers[4]?.addedAt.toISOString() >
+          currentGameFinished!.playerTwo.answers[4]?.addedAt.toISOString()
+        ) {
+          currentGameFinished!.playerTwo.score += Number(
+            playerTwoCorrectAnswers > 0,
+          ); // Дополнительный балл
+          await this.transactionsRepository.save(
+            currentGameFinished!.playerTwo,
+            manager,
+          );
+        } else {
+          throw new InternalServerErrorException('mismatch in date comparison');
+        }
+      }
+      // if (
+      //   isFirstPlayerFinished &&
+      //   !isSecondPlayerFinished &&
+      //   playerOneCorrectAnswers >= 1
+      // ) {
+      //   // Игрок 1 ответил на все вопросы первым
+      //   currentGameFinished!.playerOne.score += 1; // Дополнительный балл
+      //   await this.transactionsRepository.save(
+      //     currentGameFinished!.playerOne,
+      //     manager,
+      //   );
+      // } else if (
+      //   isSecondPlayerFinished &&
+      //   !isFirstPlayerFinished &&
+      //   playerTwoCorrectAnswers >= 1
+      // ) {
+      //   // Игрок 2 ответил на все вопросы первым
+      //   currentGameFinished!.playerTwo.score += 1; // Дополнительный балл
+      //
+      //   await this.transactionsRepository.save(
+      //     currentGameFinished!.playerTwo,
+      //     manager,
+      //   );
+      // }
 
       // // Создаем событие завершения игры
       // const gameFinishedEvent = new GameFinishedEvent();
@@ -282,3 +341,17 @@ export class SendAnswerUseCase extends TransactionBaseUseCase<
     };
   }
 }
+//Находим по юзеру id игрока
+// const playerId = await this.gameQueryRepository.findPlayerIdByUserId(
+//   command.userId,
+//   manager,
+// );
+// console.log('UseCase playerId*', playerId);
+// if (!playerId) {
+//   return {
+//     data: false,
+//     code: ResultCode.NotFound,
+//     field: 'playerId_UseCase',
+//     message: 'User in table player not found, bro!',
+//   };
+// }

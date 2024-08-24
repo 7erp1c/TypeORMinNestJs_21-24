@@ -95,6 +95,8 @@ export class GameQueryRepository {
           'playerTwo.answers',
           'playerOne.user',
           'playerTwo.user',
+          'playerOne.answers.question',
+          'playerTwo.answers.question',
         ],
       });
     }
@@ -122,16 +124,21 @@ export class GameQueryRepository {
       const response = {
         id: game.id,
         firstPlayerProgress: {
-          answers: (game.playerOne?.answers || []).map((answer) => {
-            console.log('Processing Answer:', answer);
-            console.log('Answer Object:', answer);
-            console.log('Question ID:', answer.question?.id);
-            return {
-              questionId: answer.question?.id || null,
-              answerStatus: answer.answerStatus || null,
-              addedAt: answer.addedAt || null,
-            };
-          }),
+          answers: (game.playerOne?.answers || [])
+            .sort(
+              (a, b) =>
+                new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime(),
+            ) // Сортировка по дате добавления
+            .map((answer) => {
+              console.log('Processing Answer:', answer);
+              console.log('Answer Object:', answer);
+              console.log('Question ID:', answer.question?.id);
+              return {
+                questionId: answer.question?.id || null,
+                answerStatus: answer.answerStatus || null,
+                addedAt: answer.addedAt || null,
+              };
+            }),
           player: {
             id: game.playerOne?.user?.id || null,
             login: game.playerOne?.user?.login || null,
@@ -140,14 +147,20 @@ export class GameQueryRepository {
         },
         secondPlayerProgress: game.playerTwo
           ? {
-              answers: (game.playerTwo?.answers || []).map((answer) => {
-                console.log('Processing Answer:', answer);
-                return {
-                  questionId: answer.question?.id || null,
-                  answerStatus: answer.answerStatus || null,
-                  addedAt: answer.addedAt || null,
-                };
-              }),
+              answers: (game.playerTwo?.answers || [])
+                .sort(
+                  (a, b) =>
+                    new Date(a.addedAt).getTime() -
+                    new Date(b.addedAt).getTime(),
+                ) // Сортировка по дате добавления
+                .map((answer) => {
+                  console.log('Processing Answer:', answer);
+                  return {
+                    questionId: answer.question?.id || null,
+                    answerStatus: answer.answerStatus || null,
+                    addedAt: answer.addedAt || null,
+                  };
+                }),
               player: {
                 id: game.playerTwo?.user?.id || null,
                 login: game.playerTwo?.user?.login || null,
@@ -158,13 +171,19 @@ export class GameQueryRepository {
 
         questions:
           game.questions && game.questions.length
-            ? game.questions.map((question) => {
-                console.log('Processing Question:', question);
-                return {
-                  id: question.id || null,
-                  body: question.body || null,
-                };
-              })
+            ? game.questions
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+                ) // Сортировка по дате создания
+                .map((question) => {
+                  console.log('Processing Question:', question);
+                  return {
+                    id: question.id || null,
+                    body: question.body || null,
+                  };
+                })
             : null,
 
         status: game.status || null,
