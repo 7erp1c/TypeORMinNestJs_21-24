@@ -1,25 +1,17 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+//import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth/api/model/auth.controller';
 import { DevicesController } from './devices/api/devices.controller';
 import { AuthService } from './auth/aplication/auth.service';
 import { DevicesService } from './devices/aplication/devices.service';
-import { DevicesSchema } from './devices/domain/device.entity';
-import {
-  BlackList,
-  RefreshTokenBlackList,
-  RefreshTokenBlackListSchema,
-} from './auth/domain/refresh.token.black.list.entity';
-import { DeviceRepository } from './devices/infrastructure/device.repository';
-import { SessionsQueryRepository } from './devices/infrastructure/device.query.repository';
+import { BlackList } from './auth/domain/refresh.token.black.list.entity';
 import { EmailAdapter } from '../../common/service/email/email-adapter';
 import { EmailsManager } from '../../common/service/email/email-manager';
 import { TokenService } from '../../common/service/jwt/token.service';
 import { DateCreate } from '../../base/adapters/get-current-date';
 import { BcryptAdapter } from '../../base/adapters/bcrypt.adapter';
 import { RandomNumberService } from '../../common/service/random/randomNumberUUVid';
-import { RefreshTokenBlackRepository } from './auth/infrastructure/refresh.token.black.repository';
 import { JwtService } from '@nestjs/jwt';
 import { CqrsModule } from '@nestjs/cqrs';
 import { RegistrationUserUseCase } from './auth/aplication.use.case/registration.user.use.case';
@@ -30,6 +22,7 @@ import { RefreshTokenBlackRepositorySql } from './auth/infrastrucrure.sql/refres
 import { SessionsQueryRepositorySql } from './devices/infrastructure.sql/device.query.repository.sql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from './devices/domain/device.entity.type.orm';
+
 const useCase = [
   RegistrationUserUseCase,
   LoginUserUseCase,
@@ -47,28 +40,28 @@ const adapters = [
     CqrsModule,
     UsersModule,
     TypeOrmModule.forFeature([BlackList, Session]),
-    MongooseModule.forFeature([
-      {
-        name: RefreshTokenBlackList.name,
-        schema: RefreshTokenBlackListSchema,
-      },
-      {
-        name: Session.name,
-        schema: DevicesSchema,
-      },
-    ]),
+    //   MongooseModule.forFeature([
+    //     {
+    //       name: RefreshTokenBlackList.name,
+    //       schema: RefreshTokenBlackListSchema,
+    //     },
+    //     {
+    //       name: Session.name,
+    //       schema: DevicesSchema,
+    //     },
+    //   ]),
   ],
   controllers: [AuthController, DevicesController],
   providers: [
     AuthService,
     DevicesService,
-    DeviceRepository,
+    //DeviceRepository,
     DeviceRepositorySql,
     RandomNumberService,
     JwtService,
-    RefreshTokenBlackRepository,
+    //RefreshTokenBlackRepository,
     RefreshTokenBlackRepositorySql,
-    SessionsQueryRepository,
+    //SessionsQueryRepository,
     SessionsQueryRepositorySql,
     ...adapters,
     ...useCase,

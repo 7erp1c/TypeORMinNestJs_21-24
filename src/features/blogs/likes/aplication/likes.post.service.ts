@@ -1,6 +1,6 @@
 import { PostsLikesInputModel } from '../api/model/input/likes.input.models';
 import { Injectable } from '@nestjs/common';
-import { PostLikesRepository } from '../infrastructure/post.likes.repository';
+//import { PostLikesRepository } from '../infrastructure/post.likes.repository';
 import { PostsLikes } from '../domain/likes.entity';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
 import { PostLikesRepositorySql } from '../infrastructure.sql/post.likes.repository.sql';
@@ -8,7 +8,7 @@ import { PostLikesRepositorySql } from '../infrastructure.sql/post.likes.reposit
 export class LikesPostService {
   constructor(
     protected dateCreate: DateCreate,
-    protected postLikesRepository: PostLikesRepository,
+    //protected postLikesRepository: PostLikesRepository,
     protected postLikesRepositorySql: PostLikesRepositorySql,
   ) {}
   async createLikePost(

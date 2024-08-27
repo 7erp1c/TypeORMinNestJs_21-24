@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../../aplication/auth.service';
-import { UsersQueryRepository } from '../../../../users/infrastructure/users.query-repository';
+//import { UsersQueryRepository } from '../../../../users/infrastructure/users.query-repository';
 import {
   ConfirmationCodeInputModel,
   LoginOrEmailInputModel,
@@ -42,7 +42,7 @@ import { UsersQueryRepositorySql } from '../../../../users/sql.infrastructure/us
 export class AuthController {
   constructor(
     protected authService: AuthService,
-    protected usersQueryRepository: UsersQueryRepository,
+    //protected usersQueryRepository: UsersQueryRepository,
     protected usersQueryRepositorySql: UsersQueryRepositorySql,
     protected commandBus: CommandBus,
   ) {}
@@ -53,11 +53,11 @@ export class AuthController {
     await this.authService.newPassword(inputModelDto);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
+  /*@HttpCode(HttpStatus.NO_CONTENT)
   @Post('password-recovery')
   async passwordRecovery(@Body() inputModelDto: UserEmailInputModel) {
-    return await this.authService.passwordRecovery(inputModelDto);
-  }
+    //return await this.authService.passwordRecovery(inputModelDto);
+  }*/
 
   @HttpCode(HttpStatus.OK)
   @Post('login')

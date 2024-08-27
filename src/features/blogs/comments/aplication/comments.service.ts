@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PostsService } from '../../posts/aplication/posts.service';
 import { CommentCreateDto } from '../../blogs/api/models/input/input';
-import { CommentsRepository } from '../infrastructure/comments.repository';
+//import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentsDb } from '../domain/comments.entity';
 import { CommentUpdateInputModel } from '../api/input/comments.input.model';
 import { UsersService } from '../../../users/application/users.service';
@@ -16,7 +16,7 @@ import { CommentsRepositorySql } from '../infrastructure.sql/comments.repository
 @Injectable()
 export class CommentsService {
   constructor(
-    protected commentsRepository: CommentsRepository,
+    //protected commentsRepository: CommentsRepository,
     protected userService: UsersService,
     protected postService: PostsService,
     protected dateCreate: DateCreate,

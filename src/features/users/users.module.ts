@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './api/users.controller';
 import { UsersService } from './application/users.service';
-import { UsersRepository } from './infrastructure/users.repository';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './domain/user.entity';
+// import { MongooseModule } from '@nestjs/mongoose';
 import { BcryptAdapter } from '../../base/adapters/bcrypt.adapter';
-import { UsersQueryRepository } from './infrastructure/users.query-repository';
+//import { UsersQueryRepository } from './infrastructure/users.query-repository';
 import { DateCreate } from '../../base/adapters/get-current-date';
 import { RandomNumberService } from '../../common/service/random/randomNumberUUVid';
 import { InputUniqDataIsExistConstraint } from '../../common/decorators/validate/uniqueness/uniqInDb-is-exist.decorator';
@@ -18,13 +16,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './domain/user.entities.typeORM';
 import { UsersRepositoryTypeOrm } from './infrastructure.TypeORM/users.repository.type.orm';
 import { UsersQueryRepositoryTypeORM } from './infrastructure.TypeORM/users.query.repository.TypeORM';
-import { Player } from '../quiz/game/domain/player.entity';
+//import { UsersRepository } from './infrastructure/users.repository';
 
 const useCases = [CreateUserUseCase, DeleteUserUseCase];
 const usersProviders = [
   UsersService,
-  UsersRepository,
-  UsersQueryRepository,
+  //UsersRepository,
+  //UsersQueryRepository,
   UsersRepositorySql,
   UsersQueryRepositorySql,
   UsersRepositoryTypeOrm,
@@ -38,12 +36,12 @@ const usersProviders = [
     CqrsModule,
     TypeOrmModule.forFeature([Users]),
 
-    MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-    ]),
+    // MongooseModule.forFeature([
+    //   {
+    //     name: User.name,
+    //     schema: UserSchema,
+    //   },
+    // ]),
   ],
   controllers: [UsersController],
   providers: [
@@ -55,6 +53,6 @@ const usersProviders = [
     ...useCases,
     // ...queryCases,
   ],
-  exports: [UsersService, UsersQueryRepository, UsersQueryRepositorySql],
+  exports: [UsersService, /*UsersQueryRepository,*/ UsersQueryRepositorySql],
 })
 export class UsersModule {}

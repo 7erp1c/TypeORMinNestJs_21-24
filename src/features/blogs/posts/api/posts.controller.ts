@@ -2,7 +2,6 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -17,17 +16,16 @@ import {
 import {
   CommentCreateInputModel,
   CreatePostInputModels,
-  UpdatePostInputModel,
 } from './models/input/create.post.input.models';
 import { BlogsService } from '../../blogs/aplication/blogs.service';
 import { PostsService } from '../aplication/posts.service';
-import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
+//import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CommentCreateDto } from '../../blogs/api/models/input/input';
 import { PostOutputDto } from './models/output/output.types';
 import { QueryPostsRequestType } from './models/input/input';
 import { Request } from 'express';
 import { CommentsService } from '../../comments/aplication/comments.service';
-import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
+//import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
 import { PostsLikesInputModel } from '../../likes/api/model/input/likes.input.models';
 import { LikesPostService } from '../../likes/aplication/likes.post.service';
 import { AuthGuard } from '../../../../common/guards/auth.guard';
@@ -44,9 +42,9 @@ export class PostsController {
   constructor(
     protected postsService: PostsService,
     protected blogsService: BlogsService,
-    protected postsQueryRepository: PostsQueryRepository,
+    //protected postsQueryRepository: PostsQueryRepository,
     protected commentsService: CommentsService,
-    protected commentsQueryRepository: CommentsQueryRepository,
+    //protected commentsQueryRepository: CommentsQueryRepository,
     protected likesService: LikesPostService,
     protected postsQueryRepositorySql: PostsQueryRepositorySql,
     protected commentsQueryRepositorySql: CommentsQueryRepositorySql,
@@ -97,24 +95,24 @@ export class PostsController {
     }
   }
 
-  @Post()
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  async createPost(@Body() inputModel: CreatePostInputModels) {
-    const findBlogById = await this.blogsService.findBlogById(
-      inputModel.blogId,
-    );
-    if (!findBlogById) {
-      throw new NotFoundException([
-        { message: 'Sorry bro, blog not found', field: 'blogId' },
-      ]);
-    }
-    const newPosts = await this.postsService.createPost(
-      inputModel,
-      findBlogById.name,
-    );
-    return await this.postsQueryRepository.getPostById(newPosts);
-  }
+  // @Post()
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.CREATED)
+  // async createPost(@Body() inputModel: CreatePostInputModels) {
+  //   const findBlogById = await this.blogsService.findBlogById(
+  //     inputModel.blogId,
+  //   );
+  //   if (!findBlogById) {
+  //     throw new NotFoundException([
+  //       { message: 'Sorry bro, blog not found', field: 'blogId' },
+  //     ]);
+  //   }
+  //   const newPosts = await this.postsService.createPost(
+  //     inputModel,
+  //     findBlogById.name,
+  //   );
+  //   return await this.postsQueryRepository.getPostById(newPosts);
+  // }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
@@ -144,22 +142,22 @@ export class PostsController {
     }
   }
 
-  @Put('/:id')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(
-    @Param('id') postId: string,
-    @Body() UpdateModel: UpdatePostInputModel,
-  ) {
-    return await this.postsService.updateBlog(postId, UpdateModel);
-  }
+  // @Put('/:id')
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async updatePost(
+  //   @Param('id') postId: string,
+  //   @Body() UpdateModel: UpdatePostInputModel,
+  // ) {
+  //   return await this.postsService.updateBlog(postId, UpdateModel);
+  // }
 
-  @Delete('/:id')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') postId: string) {
-    return await this.postsService.deletePost(postId);
-  }
+  // @Delete('/:id')
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async deletePost(@Param('id') postId: string) {
+  //   return await this.postsService.deletePost(postId);
+  // }
 
   @Get(':id/comments')
   @HttpCode(HttpStatus.OK)

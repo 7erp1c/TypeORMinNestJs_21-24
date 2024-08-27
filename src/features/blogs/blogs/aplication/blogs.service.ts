@@ -3,17 +3,19 @@ import {
   UpdateBlogInputModel,
 } from '../api/models/input/create.blog.input.model';
 import { BlogTypeCreate } from '../api/models/input/input';
-import { BlogsRepository } from '../infrastructure/blogs.repository';
+//import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { Injectable } from '@nestjs/common';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
 import { BlogsRepositorySql } from '../infrastructure.sql/blogs.repository.sql';
+import { BlogsQueryRepositorySql } from '../infrastructure.sql/blogs.query.repository.sql';
 
 @Injectable()
 export class BlogsService {
   constructor(
-    private readonly blogsRepository: BlogsRepository,
+    //private readonly blogsRepository: BlogsRepository,
     private readonly dateCreate: DateCreate,
     private readonly blogsRepositorySql: BlogsRepositorySql,
+    private readonly blogsQueryRepositorySql: BlogsQueryRepositorySql,
   ) {}
   async createBlog(inputModel: CreateBlogInputModel): Promise<string> {
     const createdAt = await this.dateCreate.getCurrentDateInISOStringFormat();
@@ -40,6 +42,6 @@ export class BlogsService {
   }
 
   async findBlogById(blogId: string) {
-    return await this.blogsRepository.findBlogById(blogId);
+    return await this.blogsQueryRepositorySql.getById(blogId);
   }
 }

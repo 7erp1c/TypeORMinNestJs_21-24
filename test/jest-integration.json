@@ -1,0 +1,11 @@
+ {
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../test",
+  "testEnvironment": "node",
+  "testTimeout": 10000,
+  "testMatch": ["**/*.integration.test.ts"],
+  "transform": {
+   "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "verbose": true
+}

@@ -1,6 +1,6 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { TestingService } from '../aplication/testing.service';
+// import { TestingService } from '../aplication/testing.service';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm';
 @Controller('testing')
 export class TestingController {
   constructor(
-    protected testingService: TestingService,
+    // protected testingService: TestingService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 

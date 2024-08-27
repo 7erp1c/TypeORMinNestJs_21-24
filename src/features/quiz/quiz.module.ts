@@ -20,9 +20,10 @@ import { GameQueryRepository } from './game/infrastructure.sql/query/game.query.
 import { UsersQueryRepositorySql } from '../users/sql.infrastructure/users-query-repository-sql';
 import { TransactionsRepository } from './game/infrastructure.sql/transactionsRepository';
 import { SendAnswerUseCase } from './game/aplication.use.case/answers.quiz.game.use.case';
-import { EventEmitter } from 'typeorm/browser/platform/BrowserPlatformTools';
-import { Buffer } from 'buffer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { GameQueryGetAllRepository } from './game/infrastructure.sql/query/game.query.get.all.repository';
+import { MyStatisticQuery } from './game/infrastructure.sql/query/get.my.statistic.query.repository';
+
 const questionsProvider = [
   CreateQuestionsUseCase,
   QuestionsRepository,
@@ -31,6 +32,7 @@ const questionsProvider = [
   UpdatePublishQuestionUseCase,
   UpdateDataQuestionUseCase,
   UsersQueryRepositorySql,
+  GameQueryGetAllRepository,
 ];
 const quizUseCaseProvider = [
   ConnectQuizGameUseCase,
@@ -39,6 +41,7 @@ const quizUseCaseProvider = [
   TransactionsRepository,
   SendAnswerUseCase,
   GameQueryRepository,
+  MyStatisticQuery,
 ];
 
 @Module({

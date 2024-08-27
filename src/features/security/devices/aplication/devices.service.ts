@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { DeviceRepository } from '../infrastructure/device.repository';
+//import { DeviceRepository } from '../infrastructure/device.repository';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../../auth/setting/constants';
 import { RandomNumberService } from '../../../../common/service/random/randomNumberUUVid';
@@ -24,7 +24,7 @@ export class DevicesService {
     private readonly tokenService: TokenService,
     private readonly jwtService: JwtService,
     protected randomNumberService: RandomNumberService,
-    private readonly deviceRepository: DeviceRepository,
+    // private readonly deviceRepository: DeviceRepository,
     private readonly deviceRepositorySql: DeviceRepositorySql,
   ) {}
   async createSession(

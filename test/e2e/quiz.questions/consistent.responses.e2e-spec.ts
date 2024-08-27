@@ -9,7 +9,6 @@ import { AppModule } from '../../../src/app.module';
 import { applyAppSettings } from '../../../src/settings/apply-app-setting';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Question } from '../../../src/features/quiz/questions/domain/quiz.question.entity';
-import { Game } from '../../../src/features/quiz/game/domain/game.entity';
 
 const createModel1: UserCreateInputModel = {
   login: 'I14fg7ada',
@@ -52,7 +51,7 @@ describe('quiz', () => {
     await app.init();
     // Init authTestManager
     authTestManager = new AuthTestManager(app);
-    server = request(app.getHttpServer());
+    server = request!(app.getHttpServer());
     await server.delete('/testing/all-data');
   });
 

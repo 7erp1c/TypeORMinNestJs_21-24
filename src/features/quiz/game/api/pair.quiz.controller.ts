@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -25,15 +26,64 @@ import { AnswerPlayer } from './model/input/input.answers';
 import { SendAnswerUseCaseCommand } from '../aplication.use.case/answers.quiz.game.use.case';
 import { InputUuid } from './model/input/input.uuid';
 import { validate } from 'class-validator';
+import { GameQueryGetAllRepository } from '../infrastructure.sql/query/game.query.get.all.repository';
+import { QueryRequestType } from '../../../../base/adapters/query/types';
+import {
+  createQuery,
+  createQueryGame,
+} from '../../../../base/adapters/query/create.query';
+import { MyStatisticQuery } from '../infrastructure.sql/query/get.my.statistic.query.repository';
 
-@Controller('/pair-game-quiz/pairs')
+@Controller('/pair-game-quiz/')
 export class PairQuizController {
   constructor(
     private commandBus: CommandBus,
     private gameQueryRepository: GameQueryRepository,
+    private readonly gameQueryGetAllRepository: GameQueryGetAllRepository,
+    private readonly statistic: MyStatisticQuery,
   ) {}
 
-  @Get('/my-current')
+  @Get('users/my-statistic')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async findMyStatistic(@Req() req: Request) {
+    console.log(req.user.userId);
+    const result = await this.statistic.getPlayerStatistic(req.user.userId);
+
+    if (!result) {
+      return exceptionHandler(
+        ResultCode.NotFound,
+        'Current game not found',
+        '/get_findCurrentGame',
+      );
+    }
+
+    return result;
+  }
+
+  @Get('pairs/my')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async findMyGame(@Req() req: Request, @Query() query: QueryRequestType) {
+    const { sortData } = createQueryGame(query);
+    const result =
+      await this.gameQueryGetAllRepository.getMyGameHistoryByUserId(
+        req.user.userId,
+        sortData,
+      );
+
+    if (!result) {
+      return exceptionHandler(
+        ResultCode.NotFound,
+        'Current game not found',
+        '/get_findCurrentGame',
+      );
+    }
+
+    return result;
+  }
+
+  @Get('pairs/my-current')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async findCurrentGame(@Req() req: Request) {
@@ -53,7 +103,7 @@ export class PairQuizController {
     return result;
   }
 
-  @Get('/:id')
+  @Get('pairs/:id')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async findGameById(@Param('id') id: string, @Req() req: Request) {
@@ -81,7 +131,7 @@ export class PairQuizController {
     }
   }
 
-  @Post('/connection')
+  @Post('pairs/connection')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async connection(@Req() req: Request) {
@@ -103,17 +153,10 @@ export class PairQuizController {
     );
   }
 
-  @Post('/my-current/answers')
+  @Post('pairs/my-current/answers')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async answers(@Body() inputModel: AnswerPlayer, @Req() req: Request) {
-    console.log(req.user.userId);
-    console.log(inputModel.answer);
-    // await this.gameQueryRepository.falseStart(req.user.userId);
-    //
-    // // Проверяем количество ответов в активной игре
-    // await this.gameQueryRepository.getAnswersCountInActiveGame(req.user.userId);
-
     const toAnswer = await this.commandBus.execute(
       new SendAnswerUseCaseCommand(inputModel, req.user.userId),
     );
@@ -121,7 +164,6 @@ export class PairQuizController {
     if (toAnswer.code !== ResultCode.Success) {
       return exceptionHandler(toAnswer.code, toAnswer.message, toAnswer.field);
     }
-    console.log('Controller toAnswer result', toAnswer.response);
 
     return this.gameQueryRepository.findAnswerInGame(
       toAnswer.response,

@@ -3,7 +3,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { DevicesService } from '../../devices/aplication/devices.service';
-import { RefreshTokenBlackRepository } from '../infrastructure/refresh.token.black.repository';
+//import { RefreshTokenBlackRepository } from '../infrastructure/refresh.token.black.repository';
 import { RefreshTokenBlackRepositorySql } from '../infrastrucrure.sql/refresh.token.black.repository.sql';
 export class LogoutSessionUseCaseCommand {
   constructor(public oldRefreshToken: string) {}
@@ -14,7 +14,7 @@ export class LogoutSessionUseCase
 {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly tokenBlack: RefreshTokenBlackRepository,
+    //private readonly tokenBlack: RefreshTokenBlackRepository,
     private readonly tokenBlackSql: RefreshTokenBlackRepositorySql,
     private readonly devicesService: DevicesService,
   ) {}

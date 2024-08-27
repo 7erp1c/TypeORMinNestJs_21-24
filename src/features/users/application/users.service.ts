@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../infrastructure/users.repository';
+// import { UsersRepository } from '../infrastructure/users.repository';
 import { DateCreate } from '../../../base/adapters/get-current-date';
 import {
   ConfirmationCodeInputModel,
@@ -13,7 +13,7 @@ import { UsersRepositorySql } from '../sql.infrastructure/user.repository.sql';
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    //private readonly usersRepository: UsersRepository,
     private readonly usersRepositorySql: UsersRepositorySql,
     protected dateCreate: DateCreate,
   ) {}
@@ -27,14 +27,14 @@ export class UsersService {
     return await this.usersRepositorySql.getUserByCode(code);
   }
 
-  async updateRecovery(email: string, code: string) {
-    const createdAtPlus = await this.dateCreate.getDateInISOStringFormat();
-    return await this.usersRepository.updateRecovery(
-      email,
-      code,
-      createdAtPlus,
-    );
-  }
+  // async updateRecovery(email: string, code: string) {
+  //   const createdAtPlus = await this.dateCreate.getDateInISOStringFormat();
+  //   return await this.usersRepository.updateRecovery(
+  //     email,
+  //     code,
+  //     createdAtPlus,
+  //   );
+  // }
   async updateConfirmationStatus(inputModelDto: ConfirmationCodeInputModel) {
     const createdAt = await this.dateCreate.getCurrentDateInISOStringFormat();
     //return await this.usersRepository.updateConfirmationStatus( //mongoose

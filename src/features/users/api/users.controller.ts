@@ -11,7 +11,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { UsersQueryRepository } from '../infrastructure/users.query-repository';
+//import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { UserCreateInputModel } from './models/input/create.user.input.model';
 import { createQuery } from '../../../base/adapters/query/create.query';
 import { QueryUsersRequestType } from './models/input/input';
@@ -30,7 +30,7 @@ import { UsersQueryRepositoryTypeORM } from '../infrastructure.TypeORM/users.que
 //@UseGuards(AuthGuard)
 export class UsersController {
   constructor(
-    protected usersQueryRepository: UsersQueryRepository,
+    //protected usersQueryRepository: UsersQueryRepository,
     protected userQueryRepositorySql: UsersQueryRepositorySql,
     protected usersQuery: UsersQueryRepositoryTypeORM,
     private commandBus: CommandBus,

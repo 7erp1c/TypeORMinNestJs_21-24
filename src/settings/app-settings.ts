@@ -60,9 +60,12 @@ class APISettings {
   //Email
   public readonly GMAIL_COM_PASS: string;
   // Database
-  public readonly POSTGRES_CONNECTION_URI: string;
-  public readonly MONGO_CONNECTION_URI: string;
-  public readonly MONGO_CONNECTION_URI_FOR_TESTS: string;
+  public readonly POSTGRES_HOST;
+  public readonly POSTGRES_PORT;
+  public readonly POSTGRES_USER;
+  public readonly POSTGRES_PASSWORD;
+  public readonly POSTGRES_DATABASE;
+  public readonly POSTGRES_DATABASE_TEST;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     // Application
@@ -72,14 +75,15 @@ class APISettings {
     );
     //JWT
     this.JWT_SECRET = envVariables.JWT_SECRET ?? '123';
-    console.log('*Jwt*', this.JWT_SECRET);
     //Email
     this.GMAIL_COM_PASS = envVariables.GMAIL_COM_PASS!;
     // Database
-    this.MONGO_CONNECTION_URI =
-      envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
-    this.MONGO_CONNECTION_URI_FOR_TESTS =
-      envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
+    this.POSTGRES_HOST = envVariables.POSTGRES_HOST!;
+    this.POSTGRES_PORT = envVariables.POSTGRES_PORT!;
+    this.POSTGRES_USER = envVariables.POSTGRES_USER!;
+    this.POSTGRES_PASSWORD = envVariables.POSTGRES_PASSWORD!;
+    this.POSTGRES_DATABASE = envVariables.POSTGRES_DATABASE!;
+    this.POSTGRES_DATABASE_TEST = envVariables.POSTGRES_DATABASE_TEST!;
   }
 
   private getNumberOrDefault(value: string, defaultValue: number): number {
@@ -101,5 +105,4 @@ const env = new EnvironmentSettings(
 
 const api = new APISettings(process.env);
 export const appSettings = new AppSettings(env, api);
-console.log('*Jwt*****', appSettings.api.JWT_SECRET);
 console.log(appSettings.env.isTesting());

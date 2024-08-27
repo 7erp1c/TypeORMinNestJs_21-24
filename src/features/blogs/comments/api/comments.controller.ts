@@ -20,7 +20,7 @@ import {
 import { Request } from 'express';
 import { CommentsService } from '../aplication/comments.service';
 import { LikesCommentsService } from '../../likes/aplication/likes.comments.service';
-import { CommentsQueryRepository } from '../infrastructure/comments.query.repository';
+//import { CommentsQueryRepository } from '../infrastructure/comments.query.repository';
 import { CommentUpdateInputModel } from './input/comments.input.model';
 import { AuthGuard } from '../../../../common/guards/auth.guard';
 import { BlindGuard } from '../../../../common/guards/blind.guard.token';
@@ -32,7 +32,7 @@ export class CommentsController {
   constructor(
     protected commentsService: CommentsService,
     protected likesCommentsService: LikesCommentsService,
-    protected commentsQueryRepository: CommentsQueryRepository,
+    //protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsQueryRepositorySql: CommentsQueryRepositorySql,
   ) {}
   @Put('/:commentId/like-status')

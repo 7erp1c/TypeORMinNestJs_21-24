@@ -22,13 +22,12 @@ import {
 import { BlogsService } from '../aplication/blogs.service';
 import { BlogTypeOutput } from './models/output/output';
 import { QueryBlogsRequestType } from './models/input/input';
-import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
+//import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import {
   CreatePostInputModelByBlog,
   PostForBlog,
 } from '../../posts/api/models/input/create.post.input.models';
 import { PostsService } from '../../posts/aplication/posts.service';
-import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 
 import { Request } from 'express';
 import { AdminAuthGuard } from '../../../../common/guards/auth.admin.guard';
@@ -43,8 +42,8 @@ import { PostsQueryRepositorySql } from '../../posts/infrastructure.sql/posts.qu
 export class BlogsController {
   constructor(
     protected blogsService: BlogsService,
-    protected blogsQueryRepository: BlogsQueryRepository,
-    protected postsQueryRepository: PostsQueryRepository,
+    //protected blogsQueryRepository: BlogsQueryRepository,
+    //protected postsQueryRepository: PostsQueryRepository,
     protected postsService: PostsService,
     protected blogsQueryRepositorySql: BlogsQueryRepositorySql,
     protected postsQueryRepositorySql: PostsQueryRepositorySql,

@@ -13,7 +13,7 @@ import {
 } from '../api/model/input/loginOrEmailInputModel';
 import { Error } from 'mongoose';
 import { DevicesService } from '../../devices/aplication/devices.service';
-import { RefreshTokenBlackRepository } from '../infrastructure/refresh.token.black.repository';
+//import { RefreshTokenBlackRepository } from '../infrastructure/refresh.token.black.repository';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../setting/constants';
 import { UsersService } from '../../../users/application/users.service';
@@ -22,7 +22,7 @@ import { RandomNumberService } from '../../../../common/service/random/randomNum
 import { EmailsManager } from '../../../../common/service/email/email-manager';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
 import { CommandBus } from '@nestjs/cqrs';
-import { UpdatePasswordUseCaseCommand } from '../../../users/aplicaion.use.case/update.password.use.case';
+//import { UpdatePasswordUseCaseCommand } from '../../../users/aplicaion.use.case/update.password.use.case';
 import { RefreshTokenBlackRepositorySql } from '../infrastrucrure.sql/refresh.token.black.repository.sql';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class AuthService {
     private readonly emailsManager: EmailsManager,
     private readonly dateCreate: DateCreate,
     private readonly devicesService: DevicesService,
-    private readonly tokenBlack: RefreshTokenBlackRepository,
+    //private readonly tokenBlack: RefreshTokenBlackRepository,
     private readonly tokenBlackSql: RefreshTokenBlackRepositorySql,
     private readonly jwtService: JwtService,
     private readonly commandBus: CommandBus,
@@ -62,54 +62,54 @@ export class AuthService {
         `status: ${HttpStatus.NOT_FOUND}, Method: newPassword, field: currentDate, currentDate&expirationDate`,
       );
     //......
-    const updatePassword = await this.commandBus.execute(
-      new UpdatePasswordUseCaseCommand(inputModelDto),
-    );
-    if (!updatePassword)
-      throw new BadRequestException(
-        `status: ${HttpStatus.NOT_FOUND}, Method: newPassword, field: updatePassword, not update`,
-      );
+    // const updatePassword = await this.commandBus.execute(
+    //   new UpdatePasswordUseCaseCommand(inputModelDto),
+    // );
+    // if (!updatePassword)
+    //   throw new BadRequestException(
+    //     `status: ${HttpStatus.NOT_FOUND}, Method: newPassword, field: updatePassword, not update`,
+    //   );
     return;
   }
 
-  async passwordRecovery(inputModelDto: UserEmailInputModel) {
-    const user = await this.usersService.getUserByEmail(inputModelDto.email);
-    if (user.isDeleted)
-      throw new NotFoundException({
-        message: 'User is Deleted',
-      });
-    if (!user.recoveryPassword.isUsed) {
-      //проверим не протух ли код:
-      const currentDate =
-        await this.dateCreate.getCurrentDateInISOStringFormat();
-      if (user.recoveryPassword.expirationDate < currentDate)
-        throw new BadRequestException(
-          `status: ${HttpStatus.NOT_FOUND}, Method: newPassword, field: currentDate, currentDate&expirationDate`,
-        );
-      const sendEmail = this.emailsManager.emailsManagerRecovery(
-        user.email,
-        user.recoveryPassword.recoveryCode,
-      );
-      if (!sendEmail)
-        throw new Error('The email has not been delivered to the soap.');
-      return sendEmail;
-    }
-    if (user.recoveryPassword.isUsed) {
-      const RecoveryCode = await this.randomNumberService.generateRandomUUID();
-      const updateRecoveryUser = this.usersService.updateRecovery(
-        user.email,
-        RecoveryCode,
-      );
-      if (!updateRecoveryUser) throw new Error('Not update recovery code');
-      const sendEmail = this.emailsManager.emailsManagerRecovery(
-        user.email,
-        RecoveryCode,
-      );
-      if (!sendEmail)
-        throw new Error('The email has not been delivered to the soap.');
-      return sendEmail;
-    }
-  }
+  // async passwordRecovery(inputModelDto: UserEmailInputModel) {
+  //   const user = await this.usersService.getUserByEmail(inputModelDto.email);
+  //   if (user.isDeleted)
+  //     throw new NotFoundException({
+  //       message: 'User is Deleted',
+  //     });
+  //   if (!user.recoveryPassword.isUsed) {
+  //     //проверим не протух ли код:
+  //     const currentDate =
+  //       await this.dateCreate.getCurrentDateInISOStringFormat();
+  //     if (user.recoveryPassword.expirationDate < currentDate)
+  //       throw new BadRequestException(
+  //         `status: ${HttpStatus.NOT_FOUND}, Method: newPassword, field: currentDate, currentDate&expirationDate`,
+  //       );
+  //     const sendEmail = this.emailsManager.emailsManagerRecovery(
+  //       user.email,
+  //       user.recoveryPassword.recoveryCode,
+  //     );
+  //     if (!sendEmail)
+  //       throw new Error('The email has not been delivered to the soap.');
+  //     return sendEmail;
+  //   }
+  //   if (user.recoveryPassword.isUsed) {
+  //     const RecoveryCode = await this.randomNumberService.generateRandomUUID();
+  //     const updateRecoveryUser = this.usersService.updateRecovery(
+  //       user.email,
+  //       RecoveryCode,
+  //     );
+  //     if (!updateRecoveryUser) throw new Error('Not update recovery code');
+  //     const sendEmail = this.emailsManager.emailsManagerRecovery(
+  //       user.email,
+  //       RecoveryCode,
+  //     );
+  //     if (!sendEmail)
+  //       throw new Error('The email has not been delivered to the soap.');
+  //     return sendEmail;
+  //   }
+  // }
 
   async registrationConfirmation(inputModelDto: ConfirmationCodeInputModel) {
     const user = await this.usersService.getUserByCode(inputModelDto.code);

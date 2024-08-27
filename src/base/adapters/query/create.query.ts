@@ -21,3 +21,15 @@ export const createQuery = (query: QueryRequestType): QueryDto => {
 
   return { sortData, searchData };
 };
+
+export const createQueryGame = (query: QueryRequestType): QueryDto => {
+  const searchData: QuerySearchType = {};
+  const sortData: QuerySortType = {
+    sortBy: query.sortBy ? query.sortBy : 'pairCreatedDate',
+    sortDirection: query.sortDirection ? query.sortDirection : 'desc',
+    pageNumber: query.pageNumber ? query.pageNumber : 1,
+    pageSize: query.pageSize ? query.pageSize : 10,
+  };
+
+  return { sortData, searchData };
+};

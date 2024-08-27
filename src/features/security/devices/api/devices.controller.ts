@@ -10,14 +10,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { SessionsQueryRepository } from '../infrastructure/device.query.repository';
+//import { SessionsQueryRepository } from '../infrastructure/device.query.repository';
 import { DevicesService } from '../aplication/devices.service';
 import { SessionsQueryRepositorySql } from '../infrastructure.sql/device.query.repository.sql';
 @ApiTags('Security')
 @Controller('security')
 export class DevicesController {
   constructor(
-    protected sessionsQueryRepository: SessionsQueryRepository,
+    //protected sessionsQueryRepository: SessionsQueryRepository,
     protected sessionsQueryRepositorySql: SessionsQueryRepositorySql,
     protected sessionsService: DevicesService,
   ) {}

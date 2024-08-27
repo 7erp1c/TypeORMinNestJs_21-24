@@ -5,7 +5,7 @@ import {
   UpdatePostInputModel,
 } from '../api/models/input/create.post.input.models';
 import { Post } from '../domain/posts.entity';
-import { PostsRepository } from '../infrastructure/posts.repository';
+//import { PostsRepository } from '../infrastructure/posts.repository';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
 import { PostsRepositorySql } from '../infrastructure.sql/posts.repository.sql';
 
@@ -13,7 +13,7 @@ import { PostsRepositorySql } from '../infrastructure.sql/posts.repository.sql';
 export class PostsService {
   constructor(
     protected readonly dateCreate: DateCreate,
-    protected readonly postsRepository: PostsRepository,
+    //protected readonly postsRepository: PostsRepository,
     protected readonly postsRepositorySql: PostsRepositorySql,
   ) {}
 
@@ -48,15 +48,15 @@ export class PostsService {
     return await this.postsRepositorySql.deletePostForBlog(blogId, postId);
   }
 
-  async updateBlog(postId: string, postUpdateDto: UpdatePostInputModel) {
-    return await this.postsRepository.updatePost(postId, postUpdateDto);
-  }
-
-  async deletePost(postId: string) {
-    return await this.postsRepository.deletePost(postId);
-  }
-
-  async findPostById(id: string) {
-    return await this.postsRepository.findPostById(id);
-  }
+  // async updateBlog(postId: string, postUpdateDto: UpdatePostInputModel) {
+  //   return await this.postsRepository.updatePost(postId, postUpdateDto);
+  // }
+  //
+  // async deletePost(postId: string) {
+  //   return await this.postsRepository.deletePost(postId);
+  // }
+  //
+  // async findPostById(id: string) {
+  //   return await this.postsRepository.findPostById(id);
+  // }
 }
