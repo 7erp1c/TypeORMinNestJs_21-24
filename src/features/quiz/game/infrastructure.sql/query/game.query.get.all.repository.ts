@@ -16,7 +16,6 @@ export class GameQueryGetAllRepository {
     };
     const sortKey = `"${sortData.sortBy}"` || `"${sortDefault.default}"`;
     const sortDirection = sortData.sortDirection === 'asc' ? `ASC` : `DESC`;
-    console.log(sortKey);
     // Параметры пагинации 👀
     const pageNumber = +sortData.pageNumber || 1;
     const pageSize = +sortData.pageSize || 10;
@@ -37,8 +36,6 @@ export class GameQueryGetAllRepository {
       .leftJoinAndSelect('pta.question', 'ptaq')
       .andWhere('(pou.id = :userId or ptu.id = :userId)', { userId })
       .orderBy(`game.${sortKey}`, sortDirection)
-      .addOrderBy('poa.addedAt')
-      .addOrderBy('pta.addedAt')
       .addOrderBy(`game.${sortDefault.default}`, 'DESC');
 
     console.log(query.getSql());
@@ -48,18 +45,19 @@ export class GameQueryGetAllRepository {
     const paginatedGames =
       offset === 0 ? games : games.slice(offset, pageNumber * pageSize);
 
-    console.log(
-      'INDEX ///////// INDEX INDEX ///////// INDEX INDEX ///////// INDEX INDEX ///////// INDEX INDEX ///////// INDEX',
-    );
-
     const mappedGames = paginatedGames.map((game) => ({
       id: game.id,
       firstPlayerProgress: {
-        answers: game.playerOne.answers.map((answer) => ({
-          questionId: answer.question.id,
-          answerStatus: answer.answerStatus,
-          addedAt: answer.addedAt.toISOString(),
-        })),
+        answers: game.playerOne.answers
+          .sort(
+            (a, b) =>
+              new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime(),
+          )
+          .map((answer) => ({
+            questionId: answer.question.id,
+            answerStatus: answer.answerStatus,
+            addedAt: answer.addedAt.toISOString(),
+          })),
         player: {
           id: game.playerOne.user.id,
           login: game.playerOne.user.login,
@@ -68,11 +66,16 @@ export class GameQueryGetAllRepository {
       },
       secondPlayerProgress: game.playerTwo
         ? {
-            answers: game.playerTwo.answers.map((answer) => ({
-              questionId: answer.question.id,
-              answerStatus: answer.answerStatus,
-              addedAt: answer.addedAt.toISOString(),
-            })),
+            answers: game.playerTwo.answers
+              .sort(
+                (a, b) =>
+                  new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime(),
+              )
+              .map((answer) => ({
+                questionId: answer.question.id,
+                answerStatus: answer.answerStatus,
+                addedAt: answer.addedAt.toISOString(),
+              })),
             player: {
               id: game.playerTwo.user.id,
               login: game.playerTwo.user.login,
@@ -81,10 +84,16 @@ export class GameQueryGetAllRepository {
           }
         : null,
       questions: game.questions
-        ? game.questions.map((question) => ({
-            id: question.id,
-            body: question.body,
-          }))
+        ? game.questions
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            )
+            .map((question) => ({
+              id: question.id,
+              body: question.body,
+            }))
         : null,
       status: game.status,
       pairCreatedDate: game.pairCreatedDate,

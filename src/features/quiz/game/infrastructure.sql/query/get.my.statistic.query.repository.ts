@@ -23,14 +23,18 @@ export class MyStatisticQuery {
           return query
             .select('SUM(qp.score)')
             .from(Player, 'qp')
-            .where('qp.userId = :userId', { userId });
+            .where(`qp.userId = :userId`, { userId });
         }, 'sumScore')
 
         // Подсчет среднего количества очков
         .addSelect((query) => {
           return query
             .select(
-              'CASE WHEN AVG(qp.score) % 1 = 0 THEN CAST(AVG(qp.score) AS INTEGER) ELSE ROUND(AVG(qp.score), 2) END',
+              `CASE WHEN AVG(qp.score) % 1 = 0 THEN CAST(AVG(qp.score) AS INTEGER) ELSE ROUND(AVG(qp.score), 2) END`,
+              // CASE WHEN AVG(qp.score) % 1 = 0: Если среднее значение AVG(qp.score) не имеет дробной части (т.е. это целое число), тогда:
+              // CAST(AVG(qp.score) AS INTEGER): Преобразуем значение в целое число.
+              // ELSE ROUND(AVG(qp.score), 2): Если среднее значение имеет дробную часть, тогда:
+              // ROUND(AVG(qp.score), 2): Округляем значение до двух знаков после запятой.
             )
             .from(Player, 'qp')
             .where('qp.userId = :userId', { userId });
@@ -43,53 +47,47 @@ export class MyStatisticQuery {
             .from(Game, 'g')
             .leftJoin('g.playerOne', 'po')
             .leftJoin('g.playerTwo', 'pt')
-            .where('po.userId = :userId OR pt.userId = :userId', { userId });
+            .where(`po.userId = :userId OR pt.userId = :userId`, { userId });
         }, 'gamesCount')
 
         // Подсчет побед
         .addSelect((query) => {
           return query
-            .select('count(*)')
+            .select(
+              'count(CASE WHEN (po.userId = :userId AND po.score > pt.score) OR (pt.userId = :userId AND pt.score > po.score) THEN 1 ELSE NULL END)',
+            )
             .from(Game, 'g')
             .leftJoin('g.playerOne', 'po')
             .leftJoin('g.playerTwo', 'pt')
-            .where('po.userId = :userId OR pt.userId = :userId', { userId })
-            .andWhere(
-              '(po.userId = :userId and po.score > pt.score or pt.userId = :userId and pt.score > po.score)',
-              { userId },
-            );
+            .where('po.userId = :userId OR pt.userId = :userId', { userId });
         }, 'winsCount')
 
         // Подсчет поражений
         .addSelect((query) => {
           return query
-            .select('count(*)')
+            .select(
+              'count(CASE WHEN (po.userId = :userId AND po.score < pt.score) OR (pt.userId = :userId AND pt.score < po.score) THEN 1 ELSE NULL END)',
+            )
             .from(Game, 'g')
             .leftJoin('g.playerOne', 'po')
-            .leftJoin('g.playerTwo', 'pt')
-            .where('po.userId = :userId OR pt.userId = :userId', { userId })
-            .andWhere(
-              '(po.userId = :userId and po.score < pt.score or pt.userId = :userId and pt.score < po.score)',
-              { userId },
-            );
+            .leftJoin('g.playerTwo', 'pt');
         }, 'lossesCount')
 
         // Подсчет ничьих
         .addSelect((query) => {
           return query
-            .select('count(*)')
+            .select(
+              `count(CASE WHEN ( po.score = pt.score) OR ( pt.score = po.score) THEN 1 ELSE NULL END)`,
+              'drawsCount',
+            )
             .from(Game, 'g')
             .leftJoin('g.playerOne', 'po')
             .leftJoin('g.playerTwo', 'pt')
-            .where('po.userId = :userId OR pt.userId = :userId', { userId })
-            .andWhere(
-              '(po.userId = :userId and po.score = pt.score or pt.userId = :userId and pt.score = po.score)',
-              { userId },
-            );
+            .where('po.userId = :userId or pt.userId = :userId', { userId });
         }, 'drawsCount')
 
         .leftJoin('p.user', 'u')
-        .where('u.id = :userId', { userId })
+        .where(`u.id = :userId`, { userId })
         .limit(1);
 
       console.log(result.getSql());

@@ -21,5 +21,25 @@ export const loginModel2: LoginOrEmailInputModel = {
   password: 'qwerty1233u',
 };
 
+export const createModel3: UserCreateInputModel = {
+  login: 'I14fg7adaa',
+  password: 'qwerty123aa',
+  email: 'ul_tray@bka.rua',
+};
+export const loginModel3: LoginOrEmailInputModel = {
+  loginOrEmail: 'ul_tray@bka.rua',
+  password: 'qwerty123aa',
+};
+
+export const createModel4: UserCreateInputModel = {
+  login: 'I14faab',
+  password: 'qwerty1',
+  email: 'ul_tray@mai.ru',
+};
+export const loginModel4: LoginOrEmailInputModel = {
+  loginOrEmail: 'ul_tray@mai.ru',
+  password: 'qwerty1',
+};
+
 export const inputModelCorrect = { answer: 'correct answer' };
 export const inputModelIncorrect = { answer: 'incorrect' };
